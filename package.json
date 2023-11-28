@@ -11,7 +11,7 @@
       "build": "tsc",
       "watch": "tsc -w",
       "preversion": "auto-changelog  --config .auto-changelog.json --unreleased --commit-limit false --stdout --template preview.hbs",
-      "version": "auto-changelog -p --config .auto-changelog.json --unreleased && git add CHANGELOG.md",
+      "version": "auto-changelog -p --config .auto-changelog.json --unreleased && git add CHANGELOG.md"
     },
     "devDependencies": {
         "@pagopa/danger-custom-rules": "^2.0.3",
