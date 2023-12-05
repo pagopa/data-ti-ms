@@ -23,16 +23,14 @@ export const capitalizeFormat = (s: string): string =>
 
 export const trimFormat = (s: string): string => s.trim();
 
-export const replaceFormat = (s: string) => (
-  toBeReplaced: string,
-  placeholder: string
+export const replaceFormat = (toBeReplaced: string, placeholder: string) => (
+  s: string
 ): string => s.replace(toBeReplaced, placeholder);
 
 const escapeRegExp = (s: string): string =>
   s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 
-export const replaceAllFormat = (s: string) => (
-  toBeReplaced: string,
-  placeholder: string
+export const replaceAllFormat = (toBeReplaced: string, placeholder: string) => (
+  s: string
 ): string =>
   s.replace(new RegExp(escapeRegExp(toBeReplaced), "g"), placeholder);
