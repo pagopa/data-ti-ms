@@ -63,24 +63,24 @@ describe("TrimFormat", () => {
 
 describe("ReplaceFormat", () => {
   it("should replace the first occurrence of a static string", () => {
-    const res = replaceFormat(aString)("a", "the");
+    const res = replaceFormat("a", "the")(aString);
     expect(res).toEqual("thelowerstring");
   });
 
   it("should replace the first occurrence of a static string even if this string is repeated", () => {
-    const res = replaceFormat(aString)("r", "w");
+    const res = replaceFormat("r", "w")(aString);
     expect(res).toEqual("alowewstring");
   });
 });
 
 describe("ReplaceAllFormat", () => {
   it("should replace all occurrences of a static string", () => {
-    const res = replaceAllFormat(aString)("r", "w");
+    const res = replaceAllFormat("r", "w")(aString);
     expect(res).toEqual("alowewstwing");
   });
 
   it("should return no modified string if input is empty", () => {
-    const res = replaceAllFormat("")("r", "w");
+    const res = replaceAllFormat("r", "w")("");
     expect(res).toEqual("");
   });
 });
