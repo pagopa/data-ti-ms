@@ -9,9 +9,11 @@
       "prebuild": "shx rm -rf dist",
       "postbuild": "dependency-check package.json --no-dev --missing ./dist/**/*.js",
       "build": "tsc",
+      "lint": "eslint \"src/**\"",
       "watch": "tsc -w",
       "test": "jest",
       "test:coverage": "jest --coverage",
+      "code-review": "yarn lint && yarn test",
       "preversion": "auto-changelog  --config .auto-changelog.json --unreleased --commit-limit false --stdout --template preview.hbs",
       "version": "auto-changelog -p --config .auto-changelog.json --unreleased && git add CHANGELOG.md"
     },
