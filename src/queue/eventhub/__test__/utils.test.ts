@@ -77,6 +77,28 @@ describe("fromSas Tests", () => {
   });
 });
 
+describe("getEventHubConsumer", () => {
+  it("should return a KafkaConsumerCompact on successful decoding", () => {
+    const result = EventHubUtils.getEventHubConsumer(DUMMY_CONNECTION_STRING);
+
+    expect(E.isRight(result)).toBe(true);
+  });
+
+  it("should return an Either with an error on decoding failure", () => {
+    const invalidConnectionString =
+      "DefaultEndpointsProtocol=https;AccountName=dummy;AccountKey=key;EndpointSuffix=core.windows.net";
+
+    const result = EventHubUtils.getEventHubConsumer(invalidConnectionString);
+
+    expect(E.isLeft(result)).toBe(true);
+    if (E.isLeft(result)) {
+      expect(result.left).toEqual(
+        new Error("Error during decoding Event Hub SAS")
+      );
+    }
+  });
+});
+
 const subscriptionOptions = { fromBeginning: true, topics: ["topic"] };
 describe("subscribe", () => {
   it("should subscribe to topics successfully", async () => {
@@ -203,9 +225,8 @@ describe("readMessage", () => {
     runSpy.mockReturnValueOnce(() => TE.right(undefined));
     disconnectWithoutErrorSpy.mockReturnValueOnce(TE.right(undefined));
 
-    const result = await readMessage(
+    const result = await readMessage(kafkaConsumerMock)(
       topic,
-      kafkaConsumerMock,
       eachMessageHandler
     )();
 
@@ -225,9 +246,8 @@ describe("readMessage", () => {
     subscribeSpy.mockReturnValueOnce(() => TE.right(undefined));
     runSpy.mockReturnValueOnce(() => TE.left(undefined));
 
-    const result = await readMessage(
+    const result = await readMessage(kafkaConsumerMock)(
       topic,
-      kafkaConsumerMock,
       eachMessageHandler
     )();
 

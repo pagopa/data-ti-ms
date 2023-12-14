@@ -7,6 +7,7 @@ import {
   AzureEventhubSas,
   AzureEventhubSasFromString
 } from "@pagopa/fp-ts-kafkajs/dist/lib/KafkaProducerCompact";
+import { defaultLog } from "@pagopa/winston-ts";
 import * as E from "fp-ts/Either";
 import * as IO from "fp-ts/IO";
 import * as TE from "fp-ts/TaskEither";
@@ -56,6 +57,22 @@ export const fromSas = (
     fullConfig => fromConfig(fullConfig)
   );
 
+export const getEventHubConsumer = (
+  connectionString: string
+): E.Either<Error, KafkaConsumerCompact> =>
+  pipe(
+    AzureEventhubSasFromString.decode(connectionString),
+    E.map(sas => fromSas(sas)),
+    E.mapLeft(errors =>
+      pipe(
+        defaultLog.either.error(
+          `Error during decoding EventHub ConnectionURI - ${errors}`
+        ),
+        () => new Error(`Error during decoding Event Hub SAS`)
+      )
+    )
+  );
+
 export const subscribe = (subscription: ConsumerSubscribeTopics) => (
   client: Consumer
 ): TE.TaskEither<Error, void> =>
@@ -101,11 +118,10 @@ export const run = (config: ConsumerRunConfig) => (
 ): TE.TaskEither<Error, void> =>
   TE.tryCatch(() => client.run(config), E.toError);
 
-export const readMessage: (
+export const readMessage = (fa: KafkaConsumerCompact) => (
   topic: string,
-  fa: KafkaConsumerCompact,
-  eachMessageHandler: EachMessageHandler
-) => TE.TaskEither<Error, void> = (topic, fa, eachMessageHandler) =>
+  messageHandler: EachMessageHandler
+): TE.TaskEither<Error, void> =>
   pipe(
     fa,
     TE.fromIO,
@@ -119,7 +135,7 @@ export const readMessage: (
       )
     ),
     TE.chainFirstW(({ client }) =>
-      pipe(getMessageConsumerRunConfig(eachMessageHandler, {}), runConfig =>
+      pipe(getMessageConsumerRunConfig(messageHandler, {}), runConfig =>
         run(runConfig)(client.consumer)
       )
     ),
