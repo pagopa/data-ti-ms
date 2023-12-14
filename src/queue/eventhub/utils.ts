@@ -11,7 +11,7 @@ import { defaultLog } from "@pagopa/winston-ts";
 import * as E from "fp-ts/Either";
 import * as IO from "fp-ts/IO";
 import * as TE from "fp-ts/TaskEither";
-import { pipe } from "fp-ts/lib/function";
+import { constVoid, pipe } from "fp-ts/lib/function";
 import {
   Consumer,
   ConsumerConfig,
@@ -140,6 +140,6 @@ export const readMessage = (fa: KafkaConsumerCompact) => (
       )
     ),
     TE.chain(({ client }) => disconnectWithoutError(client.consumer)),
-    TE.map(() => void 0),
+    TE.map(constVoid),
     TE.mapLeft(error => new Error(error))
   );
