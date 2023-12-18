@@ -11,7 +11,7 @@ import { defaultLog } from "@pagopa/winston-ts";
 import * as E from "fp-ts/Either";
 import * as IO from "fp-ts/IO";
 import * as TE from "fp-ts/TaskEither";
-import { constVoid, pipe } from "fp-ts/lib/function";
+import { constVoid, pipe } from "fp-ts/function";
 import {
   Consumer,
   ConsumerConfig,
@@ -62,14 +62,15 @@ export const getEventHubConsumer = (
 ): E.Either<Error, KafkaConsumerCompact> =>
   pipe(
     AzureEventhubSasFromString.decode(connectionString),
-    E.map(sas => fromSas(sas)),
-    E.mapLeft(errors =>
-      pipe(
-        defaultLog.either.error(
-          `Error during decoding EventHub ConnectionURI - ${errors}`
+    E.bimap(
+      errors =>
+        pipe(
+          defaultLog.either.error(
+            `Error during decoding EventHub ConnectionURI - ${errors}`
+          ),
+          () => new Error(`Error during decoding Event Hub SAS`)
         ),
-        () => new Error(`Error during decoding Event Hub SAS`)
-      )
+      fromSas
     )
   );
 
@@ -140,6 +141,5 @@ export const readMessage = (fa: KafkaConsumerCompact) => (
       )
     ),
     TE.chain(({ client }) => disconnectWithoutError(client.consumer)),
-    TE.map(constVoid),
-    TE.mapLeft(error => new Error(error))
+    TE.bimap(error => new Error(error), constVoid)
   );
