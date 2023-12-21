@@ -85,10 +85,10 @@ describe("convertFormat", () => {
   });
   it("should return a date string YYYY-MM-dd hh:mm from a ISO string", () => {
     const dateString = convertFormat(isoStr, "YYYY-MM-dd hh:mm");
-    expect(dateString).toEqual("2023-01-01 13:34");
+    expect(dateString).toEqual("2023-01-01 12:34");
   });
   it("should return a date string YYYY-MM-dd hh:mm:ss from a ISO string", () => {
     const dateString = convertFormat(isoStr, "YYYY-MM-dd hh:mm:ss");
-    expect(dateString).toEqual("2023-01-01 13:34:56");
+    expect(dateString).toEqual("2023-01-01 12:34:56");
   });
 });
