@@ -1,6 +1,6 @@
-import { pipe } from "fp-ts/lib/function";
-import * as O from "fp-ts/lib/Option";
-import * as AR from "fp-ts/lib/Array";
+import * as AR from "fp-ts/Array";
+import { pipe } from "fp-ts/function";
+import * as O from "fp-ts/Option";
 
 export const upperCaseFormat = (s: string): string => s.toUpperCase();
 

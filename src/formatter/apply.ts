@@ -1,5 +1,5 @@
-import { pipe } from "fp-ts/lib/function";
-import * as OP from "fp-ts/lib/Option";
+import * as OP from "fp-ts/Option";
+import { pipe } from "fp-ts/function";
 import { MappingFormatter } from "./types";
 
 export const applyFormat = <T, O>(
