@@ -1219,15 +1219,15 @@
     eslint-plugin-sonarjs "^0.5.0"
     prettier "^2.1.2"
 
-"@pagopa/fp-ts-kafkajs@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.npmjs.org/@pagopa/fp-ts-kafkajs/-/fp-ts-kafkajs-0.3.0.tgz#bb00931bb1ed4d16f763657f19046d838d9049e9"
-  integrity sha512-16/71Bvn8oa6KAAqFuWRd4aAZbILHPu0B5NLrU67l0as/YiunWzTz5yKep5MOiHw+SvgBOWLmsJCQh9Wpyg+jw==
+"@pagopa/fp-ts-kafkajs@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@pagopa/fp-ts-kafkajs/-/fp-ts-kafkajs-1.0.1.tgz#ab0ea71251f0dcfaee12ffcea4ec39d19691d92e"
+  integrity sha512-LlRdadPD8v7lXnV9td7rPCyYG2J0f4MjVEuOO2NmZlm15t3TjaigsVmNzaTv74RTLOrVmLW2kSh5VRdv/B+eNg==
   dependencies:
     "@pagopa/ts-commons" "^10.5.1"
     fp-ts "^2.10.5"
     io-ts "^2.2.16"
-    kafkajs "^1.15.0"
+    kafkajs "^2.2.4"
     typedoc "^0.20.36"
 
 "@pagopa/openapi-codegen-ts@^11.1.0":
@@ -5434,11 +5434,6 @@ jws@^3.2.2:
   dependencies:
     jwa "^1.4.1"
     safe-buffer "^5.0.1"
-
-kafkajs@^1.15.0:
-  version "1.16.0"
-  resolved "https://registry.npmjs.org/kafkajs/-/kafkajs-1.16.0.tgz#bfcc3ae2b69265ca8435b53a01ee9e8787b9fee5"
-  integrity sha512-+Rcfu2hyQ/jv5skqRY8xA7Ra+mmRkDAzCaLDYbkGtgsNKpzxPWiLbk8ub0dgr4EbWrN1Zb4BCXHUkD6+zYfdWg==
 
 kafkajs@^2.2.4:
   version "2.2.4"
