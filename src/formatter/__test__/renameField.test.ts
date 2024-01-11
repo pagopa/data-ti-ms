@@ -1,4 +1,3 @@
-import * as E from "fp-ts/Either";
 import { renameField } from "../renameField";
 
 const inputData = {
@@ -8,7 +7,7 @@ const inputData = {
 
 describe("renameField", () => {
   it("should rename a field", () => {
-    const result = renameField(inputData, "bar", 2);
-    expect(result).toEqual(E.right({ bar: 2, foo: "foo" }));
+    const result = renameField(inputData, "bar", "bar2");
+    expect(result).toEqual({ bar2: "bar", foo: "foo" });
   });
 });
