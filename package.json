@@ -38,6 +38,7 @@
         "@pagopa/fp-ts-kafkajs": "^1.0.1",
         "@pagopa/ts-commons": "^10.7.1",
         "@pagopa/winston-ts": "^2.2.0",
+        "@azure/data-tables": "^13.2.2",
         "fp-ts": "^2.10.5",
         "io-ts": "^2.2.21",
         "kafkajs": "^2.2.4",
