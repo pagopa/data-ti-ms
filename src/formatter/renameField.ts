@@ -2,8 +2,7 @@ import { ITuple2 } from "@pagopa/ts-commons/lib/tuples";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 
 import { pipe } from "fp-ts/function";
-
-type NotInKeys<T, K extends string> = K extends keyof T ? never : K;
+import { NotInKeys } from "../utils/types";
 
 export const renameField = <T, R extends keyof T, K extends string>(
   input: T,
