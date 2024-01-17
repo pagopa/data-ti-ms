@@ -49,9 +49,7 @@ describe("tableEnrich", () => {
   });
 
   it("should return unmodified input if table document is missing", async () => {
-    getTableDocumentMock.mockImplementationOnce(() =>
-      TE.right(O.none)
-    );
+    getTableDocumentMock.mockImplementationOnce(() => TE.right(O.none));
     await pipe(
       tableEnrich(input, tableClientMock, "partitionKey", "rowKey"),
       TE.bimap(
@@ -63,13 +61,33 @@ describe("tableEnrich", () => {
 
   it("should return enriched input if table document is found", async () => {
     getTableDocumentMock.mockImplementationOnce(() =>
-      TE.right(O.some({baz: "baz"}))
+      TE.right(O.some({ baz: "baz" }))
     );
     await pipe(
       tableEnrich(input, tableClientMock, "partitionKey", "rowKey"),
       TE.bimap(
         () => fail("it should not fail"),
-        result => expect(result).toEqual({...input, baz: "baz"})
+        result => expect(result).toEqual({ ...input, baz: "baz" })
+      )
+    )();
+  });
+
+  it("should return enriched input in a specific field if table document is found and output field name is provided", async () => {
+    getTableDocumentMock.mockImplementationOnce(() =>
+      TE.right(O.some({ baz: "baz" }))
+    );
+    await pipe(
+      tableEnrich(
+        input,
+        tableClientMock,
+        "partitionKey",
+        "rowKey",
+        "enrichedField"
+      ),
+      TE.bimap(
+        () => fail("it should not fail"),
+        result =>
+          expect(result).toEqual({ ...input, enrichedField: { baz: "baz" } })
       )
     )();
   });
