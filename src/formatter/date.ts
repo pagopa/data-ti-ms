@@ -3,11 +3,13 @@ import {
   DateFromTimestamp,
   UtcOnlyIsoDateFromString
 } from "@pagopa/ts-commons/lib/dates";
+import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import * as t from "io-ts";
 
-const invalidDateStringError = (): Error => new Error("Invalid dateString");
+const invalidDateStringError = (errs: t.Errors): Error =>
+  Error(`Invalid date string|Error=${errorsToReadableMessages(errs)}`);
 
 export const dateStringToUtcFormat = (
   dateString: string
@@ -23,7 +25,8 @@ export const isoToUtcFormat = (isoString: string): E.Either<Error, string> =>
     isoString,
     UtcOnlyIsoDateFromString.decode,
     E.bimap(
-      () => new Error("Invalid isoString"),
+      errs =>
+        Error(`Invalid iso string|Error=${errorsToReadableMessages(errs)}`),
       date => date.toUTCString()
     )
   );
@@ -53,7 +56,8 @@ export const dateStringFromTimestampFormat = (
     ts,
     DateFromTimestamp.decode,
     E.bimap(
-      () => new Error("Invalid timestamp"),
+      errs =>
+        Error(`Invalid timestamp|Error=${errorsToReadableMessages(errs)}`),
       date => date.toDateString()
     )
   );
@@ -73,13 +77,16 @@ export const convertFormat = (
   pipe(
     output,
     OutputFormat.decode,
-    E.mapLeft(() => new Error("Invalid output format")),
+    E.mapLeft(errs =>
+      Error(`Invalid output format|Error=${errorsToReadableMessages(errs)}`)
+    ),
     E.flatMap(outputFormat =>
       pipe(
         isoString,
         DateFromString.decode,
         E.bimap(
-          () => new Error("Invalid isoString"),
+          errs =>
+            Error(`Invalid iso string|Error=${errorsToReadableMessages(errs)}`),
           date => {
             const year = date.getUTCFullYear();
             const month = String(date.getUTCMonth() + 1).padStart(2, "0");

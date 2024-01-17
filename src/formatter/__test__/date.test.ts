@@ -1,4 +1,5 @@
 import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
 import {
   convertFormat,
   dateStringFromTimestampFormat,
@@ -14,88 +15,158 @@ const dateStr = "2023-12-19";
 const invalidDateString = "202313-19";
 const isoTimeZone = "2018-10-13T00:00:00.000+00:00";
 const timestamp = 1702944000000;
+const invalidTimestamp = "Invalid timestamp";
 const invalidOutputFormat = "YYY-MM-dd";
 const outputFormat1 = "YYYY-MM-dd";
-const invalidDateStringError = new Error("Invalid dateString");
+
+const invalidIsoStringError = (err: Error): void => {
+  expect(err).toBeDefined();
+  expect(err.message).toEqual(expect.stringContaining("Invalid iso string"));
+};
+
+const testFail = (): void => fail("it should not reach here");
+
+const invalidDateStringError = (err: Error): void => {
+  expect(err).toBeDefined();
+  expect(err.message).toEqual(expect.stringContaining("Invalid date string"));
+};
 
 describe("dateStringToUtcFormat", () => {
   it("should return a UTC string from a date string like: 2023-12-19", () => {
-    const utc = dateStringToUtcFormat(dateStr);
-    expect(utc).toEqual(E.right("Tue, 19 Dec 2023 00:00:00 GMT"));
+    pipe(
+      dateStringToUtcFormat(dateStr),
+      E.bimap(testFail, result =>
+        expect(result).toEqual("Tue, 19 Dec 2023 00:00:00 GMT")
+      )
+    );
   });
   it("should return a UTC string from a ISO string", () => {
-    const utc = dateStringToUtcFormat(isoStr);
-    expect(utc).toEqual(E.right("Sun, 01 Jan 2023 12:34:56 GMT"));
+    pipe(
+      dateStringToUtcFormat(isoStr),
+      E.bimap(testFail, result =>
+        expect(result).toEqual("Sun, 01 Jan 2023 12:34:56 GMT")
+      )
+    );
   });
   it("should return a UTC string from a IsoTimeZone string", () => {
-    const utc = dateStringToUtcFormat(isoTimeZone);
-    expect(utc).toEqual(E.right("Sat, 13 Oct 2018 00:00:00 GMT"));
+    pipe(
+      dateStringToUtcFormat(isoTimeZone),
+      E.bimap(testFail, result =>
+        expect(result).toEqual("Sat, 13 Oct 2018 00:00:00 GMT")
+      )
+    );
   });
   it("should return an error from a not valid ISO string", () => {
-    const error = dateStringToUtcFormat(invalidIsoStr);
-    expect(error).toEqual(E.left(invalidDateStringError));
+    pipe(
+      dateStringToUtcFormat(invalidIsoStr),
+      E.bimap(invalidDateStringError, testFail)
+    );
   });
 });
 
 describe("isoToUtcFormat", () => {
   it("should return a UTC string from a ISO string", () => {
-    const utc = isoToUtcFormat(isoStr);
-    expect(utc).toEqual(E.right("Sun, 01 Jan 2023 12:34:56 GMT"));
+    pipe(
+      isoToUtcFormat(isoStr),
+      E.bimap(testFail, result =>
+        expect(result).toEqual("Sun, 01 Jan 2023 12:34:56 GMT")
+      )
+    );
   });
   it("should return an error from an invalid ISO string", () => {
-    const error = isoToUtcFormat(invalidIsoStr);
-    expect(error).toEqual(E.left(new Error("Invalid isoString")));
+    pipe(
+      isoToUtcFormat(invalidIsoStr),
+      E.bimap(invalidIsoStringError, testFail)
+    );
   });
 });
 
 describe("dateStringToIsoFormat", () => {
   it("should return a ISO string from a date string like: 2023-12-19", () => {
-    const iso = dateStringToIsoFormat(dateStr);
-    expect(iso).toEqual(E.right("2023-12-19T00:00:00.000Z"));
+    pipe(
+      dateStringToIsoFormat(dateStr),
+      E.bimap(testFail, result =>
+        expect(result).toEqual("2023-12-19T00:00:00.000Z")
+      )
+    );
   });
   it("should return an error from an invalid date string", () => {
-    const error = dateStringToIsoFormat(invalidDateString);
-    expect(error).toEqual(E.left(invalidDateStringError));
+    pipe(
+      dateStringToIsoFormat(invalidDateString),
+      E.bimap(invalidDateStringError, testFail)
+    );
   });
 });
 
 describe("dateStringToTimeStampFormat", () => {
   it("should return a timestamp from a date string like: 2023-12-19", () => {
-    const ts = dateStringToTimeStampFormat(dateStr);
-    expect(ts).toEqual(E.right(timestamp));
+    pipe(
+      dateStringToTimeStampFormat(dateStr),
+      E.bimap(testFail, result => expect(result).toEqual(timestamp))
+    );
   });
   it("should return an error from an invalid date string", () => {
-    const error = dateStringToTimeStampFormat(invalidDateString);
-    expect(error).toEqual(E.left(invalidDateStringError));
+    pipe(
+      dateStringToTimeStampFormat(invalidIsoStr),
+      E.bimap(invalidDateStringError, testFail)
+    );
   });
 });
 
 describe("dateStringFromTimestampFormat", () => {
   it("should return a date string from a timestamp", () => {
-    const dateString = dateStringFromTimestampFormat(timestamp);
-    expect(dateString).toEqual(E.right("Tue Dec 19 2023"));
+    pipe(
+      dateStringFromTimestampFormat(timestamp),
+      E.bimap(testFail, result => expect(result).toEqual("Tue Dec 19 2023"))
+    );
+  });
+  it("should return an error from an invalid timestamp", () => {
+    pipe(
+      dateStringFromTimestampFormat((invalidTimestamp as unknown) as number),
+      E.bimap(err => {
+        expect(err).toBeDefined();
+        expect(err.message).toEqual(
+          expect.stringContaining("Invalid timestamp")
+        );
+      }, testFail)
+    );
   });
 });
 
 describe("convertFormat", () => {
   it("should return a date string YYYY-MM-dd from a ISO string", () => {
-    const dateString = convertFormat(isoStr, outputFormat1);
-    expect(dateString).toEqual(E.right("2023-01-01"));
+    pipe(
+      convertFormat(isoStr, outputFormat1),
+      E.bimap(testFail, result => expect(result).toEqual("2023-01-01"))
+    );
   });
   it("should return a date string YYYY-MM-dd hh:mm from a ISO string", () => {
-    const dateString = convertFormat(isoStr, "YYYY-MM-dd hh:mm");
-    expect(dateString).toEqual(E.right("2023-01-01 12:34"));
+    pipe(
+      convertFormat(isoStr, "YYYY-MM-dd hh:mm"),
+      E.bimap(testFail, result => expect(result).toEqual("2023-01-01 12:34"))
+    );
   });
   it("should return a date string YYYY-MM-dd hh:mm:ss from a ISO string", () => {
-    const dateString = convertFormat(isoStr, "YYYY-MM-dd hh:mm:ss");
-    expect(dateString).toEqual(E.right("2023-01-01 12:34:56"));
+    pipe(
+      convertFormat(isoStr, "YYYY-MM-dd hh:mm:ss"),
+      E.bimap(testFail, result => expect(result).toEqual("2023-01-01 12:34:56"))
+    );
   });
   it("should return an error from an invalid ISO string", () => {
-    const error = convertFormat(invalidIsoStr, outputFormat1);
-    expect(error).toEqual(E.left(new Error("Invalid isoString")));
+    pipe(
+      convertFormat(invalidIsoStr, outputFormat1),
+      E.bimap(invalidIsoStringError, testFail)
+    );
   });
   it("should return an error from an invalid outputFormat", () => {
-    const error = convertFormat(isoStr, invalidOutputFormat as "YYYY-MM-dd");
-    expect(error).toEqual(E.left(new Error("Invalid output format")));
+    pipe(
+      convertFormat(isoStr, invalidOutputFormat as "YYYY-MM-dd"),
+      E.bimap(err => {
+        expect(err).toBeDefined();
+        expect(err.message).toEqual(
+          expect.stringContaining("Invalid output format")
+        );
+      }, testFail)
+    );
   });
 });
