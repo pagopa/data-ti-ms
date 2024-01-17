@@ -11,7 +11,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(validData);
 
-      expect(E.isRight(result)).toBe(true);
+      expect(E.isRight(result)).toBeTruthy();
     });
 
     it("should not validate when divider is not a number", () => {
@@ -22,7 +22,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(invalidData);
 
-      expect(E.isRight(result)).toBe(false);
+      expect(E.isRight(result)).toBeFalsy();
     });
 
     it('should not validate when mapper is not "DIVIDE_NUMBER"', () => {
@@ -33,7 +33,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(invalidData);
 
-      expect(E.isRight(result)).toBe(false);
+      expect(E.isRight(result)).toBeFalsy();
     });
 
     it('should not validate when mapper is "DIVIDE_NUMBER" and decimals attribute is evaluated', () => {
@@ -44,7 +44,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(invalidData);
 
-      expect(E.isRight(result)).toBe(false);
+      expect(E.isRight(result)).toBeFalsy();
     });
   });
 
@@ -57,7 +57,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(validData);
 
-      expect(E.isRight(result)).toBe(true);
+      expect(E.isRight(result)).toBeTruthy();
     });
 
     it("should not validate when decimals is not a number", () => {
@@ -68,7 +68,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(invalidData);
 
-      expect(E.isRight(result)).toBe(false);
+      expect(E.isRight(result)).toBeFalsy();
     });
 
     it('should not validate when mapper is not "ROUND_NUMBER"', () => {
@@ -79,7 +79,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(invalidData);
 
-      expect(E.isRight(result)).toBe(false);
+      expect(E.isRight(result)).toBeFalsy();
     });
 
     it('should not validate when mapper is "ROUND_NUMBER" and divider attribute is evaluated', () => {
@@ -90,7 +90,7 @@ describe("NumberMapping", () => {
 
       const result = NumberMapping.decode(invalidData);
 
-      expect(E.isRight(result)).toBe(false);
+      expect(E.isRight(result)).toBeFalsy();
     });
   });
 });

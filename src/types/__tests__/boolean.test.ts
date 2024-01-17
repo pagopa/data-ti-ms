@@ -11,7 +11,7 @@ describe("BooleanToStringMapping", () => {
 
     const result = BooleanMapping.decode(validMapping);
 
-    expect(E.isRight(result)).toBe(true);
+    expect(E.isRight(result)).toBeTruthy();
   });
 
   it("should not validate with incorrect values", () => {
@@ -23,6 +23,6 @@ describe("BooleanToStringMapping", () => {
 
     const result = BooleanMapping.decode(invalidMapping);
 
-    expect(E.isRight(result)).toBe(false);
+    expect(E.isRight(result)).toBeFalsy();
   });
 });

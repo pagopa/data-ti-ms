@@ -11,6 +11,6 @@ describe("SwitchCaseMapping", () => {
       defaultValue: "default"
     };
     const result = SwitchCaseMapping.decode(validMapping);
-    expect(E.isRight(result)).toBe(true);
+    expect(E.isRight(result)).toBeTruthy();
   });
 });
