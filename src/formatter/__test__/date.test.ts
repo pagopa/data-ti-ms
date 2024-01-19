@@ -17,7 +17,7 @@ const isoTimeZone = "2018-10-13T00:00:00.000+00:00";
 const timestamp = 1702944000000;
 const invalidTimestamp = "Invalid timestamp";
 const invalidOutputFormat = "YYY-MM-dd";
-const outputFormat1 = "YYYY-MM-dd";
+const outputFormat1 = "yyyy-MM-dd";
 
 const invalidIsoStringError = (err: Error): void => {
   expect(err).toBeDefined();
@@ -142,13 +142,13 @@ describe("convertFormat", () => {
   });
   it("should return a date string YYYY-MM-dd hh:mm from a ISO string", () => {
     pipe(
-      convertFormat(isoStr, "YYYY-MM-dd hh:mm"),
+      convertFormat(isoStr, "yyyy-MM-dd HH:mm"),
       E.bimap(testFail, result => expect(result).toEqual("2023-01-01 12:34"))
     );
   });
   it("should return a date string YYYY-MM-dd hh:mm:ss from a ISO string", () => {
     pipe(
-      convertFormat(isoStr, "YYYY-MM-dd hh:mm:ss"),
+      convertFormat(isoStr, "yyyy-MM-dd HH:mm:ss"),
       E.bimap(testFail, result => expect(result).toEqual("2023-01-01 12:34:56"))
     );
   });
@@ -160,7 +160,8 @@ describe("convertFormat", () => {
   });
   it("should return an error from an invalid outputFormat", () => {
     pipe(
-      convertFormat(isoStr, invalidOutputFormat as "YYYY-MM-dd"),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      convertFormat(isoStr, invalidOutputFormat as any),
       E.bimap(err => {
         expect(err).toBeDefined();
         expect(err.message).toEqual(

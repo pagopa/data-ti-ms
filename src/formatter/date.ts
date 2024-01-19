@@ -63,12 +63,39 @@ export const dateStringFromTimestampFormat = (
   );
 
 const OutputFormat = t.union([
-  t.literal("YYYY-MM-dd"),
-  t.literal("YYYY-MM-dd hh:mm"),
-  t.literal("YYYY-MM-dd hh:mm:ss")
+  t.literal("yyyy-MM-dd"),
+  t.literal("yyyy-MM-dd HH:mm"),
+  t.literal("yyyy-MM-dd HH:mm:ss")
 ]);
 
 type OutputFormat = t.TypeOf<typeof OutputFormat>;
+
+const DateComponents = t.type({
+  day: t.string,
+  hours: t.string,
+  minutes: t.string,
+  month: t.string,
+  seconds: t.string,
+  year: t.string
+});
+type DateComponents = t.TypeOf<typeof DateComponents>;
+
+const interpolateDateString = (
+  dateComponents: DateComponents,
+  outputFormat: OutputFormat
+): string => {
+  const { year, month, day, hours, minutes, seconds } = dateComponents;
+  switch (outputFormat) {
+    case "yyyy-MM-dd":
+      return `${year}-${month}-${day}`;
+    case "yyyy-MM-dd HH:mm":
+      return `${year}-${month}-${day} ${hours}:${minutes}`;
+    case "yyyy-MM-dd HH:mm:ss":
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    default:
+      throw new Error("Unexpected OutputFormat");
+  }
+};
 
 export const convertFormat = (
   isoString: string,
@@ -80,31 +107,27 @@ export const convertFormat = (
     E.mapLeft(errs =>
       Error(`Invalid output format|Error=${errorsToReadableMessages(errs)}`)
     ),
-    E.flatMap(outputFormat =>
+    E.chain(outputFormat =>
       pipe(
         isoString,
         DateFromString.decode,
         E.bimap(
           errs =>
             Error(`Invalid iso string|Error=${errorsToReadableMessages(errs)}`),
-          date => {
-            const year = date.getUTCFullYear();
-            const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-            const day = String(date.getUTCDate()).padStart(2, "0");
-            const hours = String(date.getUTCHours()).padStart(2, "0");
-            const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-            const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-
-            if (outputFormat === "YYYY-MM-dd") {
-              return `${year}-${month}-${day}`;
-            }
-            if (outputFormat === "YYYY-MM-dd hh:mm") {
-              return `${year}-${month}-${day} ${hours}:${minutes}`;
-            }
-            if (outputFormat === "YYYY-MM-dd hh:mm:ss") {
-              return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-            }
-          }
+          date => ({
+            day: String(date.getUTCDate()).padStart(2, "0"),
+            hours: String(date.getUTCHours()).padStart(2, "0"),
+            minutes: String(date.getUTCMinutes()).padStart(2, "0"),
+            month: String(date.getUTCMonth() + 1).padStart(2, "0"),
+            seconds: String(date.getUTCSeconds()).padStart(2, "0"),
+            year: String(date.getUTCFullYear())
+          })
+        ),
+        E.chain(dateComponents =>
+          E.tryCatch(
+            () => interpolateDateString(dateComponents, outputFormat),
+            E.toError
+          )
         )
       )
     )
