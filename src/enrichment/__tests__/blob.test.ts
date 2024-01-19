@@ -48,7 +48,7 @@ describe("blobEnrich", () => {
     )();
   });
 
-  it("should return unmodified input if bolb document is missing", async () => {
+  it("should return unmodified input if Blob Document is missing", async () => {
     getBlobDocumentMock.mockImplementationOnce(() => TE.right(O.none));
     await pipe(
       blobEnrich(input, containerClientMock, "foo"),
