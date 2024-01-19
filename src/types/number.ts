@@ -1,5 +1,12 @@
 import * as t from "io-ts";
 
+const MultiplyMapping = t.type({
+  mapper: t.literal("MULTIPLY_NUMBER"),
+  multiplier: t.number
+});
+
+type MultiplyMapping = t.TypeOf<typeof MultiplyMapping>;
+
 const DivideMapping = t.type({
   divider: t.number,
   mapper: t.literal("DIVIDE_NUMBER")
@@ -14,6 +21,10 @@ const RoundMapping = t.type({
 
 type RoundMapping = t.TypeOf<typeof RoundMapping>;
 
-export const NumberMapping = t.union([DivideMapping, RoundMapping]);
+export const NumberMapping = t.union([
+  DivideMapping,
+  RoundMapping,
+  MultiplyMapping
+]);
 
 export type NumberMapping = t.TypeOf<typeof NumberMapping>;

@@ -1,7 +1,33 @@
-import * as E from "fp-ts/lib/Either";
+import * as E from "fp-ts/Either";
 import { NumberMapping } from "../number";
 
 describe("NumberMapping", () => {
+  describe("MULTIPLY_NUMBER", () => {
+    it('should validate when multiplier is a number and mapper is "MULTIPLY_NUMBER"', () => {
+      const validData = {
+        multiplier: 5,
+        mapper: "MULTIPLY_NUMBER"
+      };
+      const result = NumberMapping.decode(validData);
+      expect(E.isRight(result)).toBeTruthy();
+    });
+    it("should not validate when multiplier is not a number", () => {
+      const invalidData = {
+        multiplier: "invalid",
+        mapper: "MULTIPLY_NUMBER"
+      };
+      const result = NumberMapping.decode(invalidData);
+      expect(E.isRight(result)).toBeFalsy();
+    });
+    it("should not validate when mapper is not 'MULTIPLY_NUMBER'", () => {
+      const invalidData = {
+        multiplier: 5,
+        mapper: "INVALID_MAPPER"
+      };
+      const result = NumberMapping.decode(invalidData);
+      expect(E.isRight(result)).toBeFalsy();
+    });
+  });
   describe("DIVIDE_NUMBER", () => {
     it('should validate when divider is a number and mapper is "DIVIDE_NUMBER"', () => {
       const validData = {
