@@ -76,7 +76,7 @@ describe("blobEnrich", () => {
     )();
   });
 
-  it("should return a flattened enriched input if blob document is found without specifying an output field", async () => {
+  it("should return a flattened enriched input if Blob Document is found without specifying an output field", async () => {
     getBlobDocumentMock.mockImplementationOnce(() =>
       TE.right(O.some({ baz: "baz" }))
     );
