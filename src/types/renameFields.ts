@@ -3,17 +3,8 @@ import * as O from "fp-ts/Option";
 import { has } from "fp-ts/Record";
 import { pipe } from "fp-ts/function";
 import * as t from "io-ts";
-import { renameField } from "../formatter/renameField";
 
 type NotInKeys<T, K extends string> = K extends keyof T ? never : K;
-export const renameFields = <T, R extends keyof T, K extends string>(
-  input: T,
-  renameChanges: ReadonlyArray<ITuple2<R, NotInKeys<T, K>>>
-): T =>
-  renameChanges.reduce(
-    (acc, currChange) => renameField(acc, currChange.e1, currChange.e2),
-    input
-  );
 
 interface IRenameFieldsMapping<T, R extends keyof T, K extends string> {
   readonly input: T;
