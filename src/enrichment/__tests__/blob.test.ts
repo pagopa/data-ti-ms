@@ -59,7 +59,7 @@ describe("blobEnrich", () => {
     )();
   });
 
-  it("should return enriched input into a specific field if blob document is found", async () => {
+  it("should return enriched input into a specific field if Blob Document is found", async () => {
     getBlobDocumentMock.mockImplementationOnce(() =>
       TE.right(O.some({ baz: "baz" }))
     );
