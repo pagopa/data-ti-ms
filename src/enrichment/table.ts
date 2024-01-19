@@ -1,4 +1,4 @@
-import { pipe } from "fp-ts/lib/function";
+import { flow, pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/TaskEither";
 import * as E from "fp-ts/Either";
 import * as O from "fp-ts/Option";
@@ -7,6 +7,7 @@ import * as t from "io-ts";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
 import { getTableDocument } from "../utils/tableStorage";
+import { NotInKeys } from "../utils/types";
 
 export const InputKeyFields = t.type({
   partitionKey: NonEmptyString,
@@ -15,11 +16,12 @@ export const InputKeyFields = t.type({
 
 export type InputKeyFields = t.TypeOf<typeof InputKeyFields>;
 
-export const tableEnrich = <T>(
+export const tableEnrich = <T, K extends string>(
   input: T,
   tableClient: DT.TableClient,
   partitionKeyField: keyof T,
-  rowKeyField: keyof T
+  rowKeyField: keyof T,
+  outputFieldName?: NotInKeys<T, K>
 ): TE.TaskEither<Error, T> =>
   pipe(
     { partitionKey: input[partitionKeyField], rowKey: input[rowKeyField] },
@@ -36,9 +38,16 @@ export const tableEnrich = <T>(
       getTableDocument(tableClient, inputKeys.partitionKey, inputKeys.rowKey)
     ),
     TE.map(
-      O.fold(
-        () => input,
-        tableDocument => ({ ...input, ...tableDocument })
+      flow(
+        O.map(tableDocument =>
+          pipe(
+            outputFieldName,
+            O.fromNullable,
+            O.map(fieldName => ({ ...input, [fieldName]: tableDocument })),
+            O.getOrElse(() => ({ ...input, ...tableDocument }))
+          )
+        ),
+        O.getOrElse(() => input)
       )
     )
   );

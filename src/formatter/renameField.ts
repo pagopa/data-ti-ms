@@ -1,6 +1,5 @@
 import { ITuple2 } from "@pagopa/ts-commons/lib/tuples";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
-
 import { pipe } from "fp-ts/function";
 import { NotInKeys } from "../utils/types";
 
