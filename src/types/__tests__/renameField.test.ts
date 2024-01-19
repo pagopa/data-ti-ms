@@ -1,31 +1,19 @@
 import * as E from "fp-ts/Either";
-import { RenameFieldMapping } from "../renameField";
+import { RenameFieldMapping, RenameFieldsMapping, RenameMapping } from "../renameField";
 
 describe("RenameFieldMapping", () => {
-  it("should validate", () => {
+  it("should decode if config is a valid RenameFieldMapping", () => {
     const validData = {
-      field: "foo",
-      input: { foo: "bar" },
-      newField: "fooo",
+      fieldName: "foo",
+      newFieldName: "fooo",
       mapper: "RENAME_FIELD"
     };
     const result = RenameFieldMapping.decode(validData);
     expect(E.isRight(result)).toBeTruthy();
   });
-  it("should not validate if field is not in input", () => {
+  it("should not validate if config is not a valid input", () => {
     const invalidData = {
       field: "foo",
-      input: { bar: "bar" },
-      newField: "fooo",
-      mapper: "RENAME_FIELD"
-    };
-    const result = RenameFieldMapping.decode(invalidData);
-    expect(E.isRight(result)).toBeFalsy();
-  });
-  it("should not validate if newField is already in input", () => {
-    const invalidData = {
-      field: "foo",
-      input: { foo: "bar", fooo: "bar" },
       newField: "fooo",
       mapper: "RENAME_FIELD"
     };
@@ -34,49 +22,77 @@ describe("RenameFieldMapping", () => {
   });
   it("should not validate if mapper is not 'RENAME_FIELD'", () => {
     const invalidData = {
-      field: "foo",
-      input: { foo: "bar" },
-      newField: "fooo",
+      fieldName: "foo",
+      newFieldName: "fooo",
       mapper: "INVALID_MAPPER"
     };
     const result = RenameFieldMapping.decode(invalidData);
     expect(E.isRight(result)).toBeFalsy();
   });
-  it("should not validate if field is missing", () => {
-    const invalidData = {
-      input: { foo: "bar" },
-      newField: "fooo",
-      mapper: "RENAME_FIELD"
+});
+
+describe("RenameFieldsMapping", () => {
+  it("should decode if config is a valid RenameFieldsMapping", () => {
+    const validData = {
+      mapper: "RENAME_FIELDS",
+      renameMappingChanges: [{
+        fieldName: "foo",
+        newFieldName: "fooo",
+      }]
     };
-    const result = RenameFieldMapping.decode(invalidData);
+    const result = RenameFieldsMapping.decode(validData);
+    expect(E.isRight(result)).toBeTruthy();
+  });
+  it("should not validate if config is invalid", () => {
+    const invalidData = {
+      mapper: "RENAME_FIELDS",
+      otherProp: [] as any
+    };
+    const result = RenameFieldsMapping.decode(invalidData);
     expect(E.isRight(result)).toBeFalsy();
   });
-  it("should not validate if newField is missing", () => {
+  it("should not validate if mapper is not 'RENAME_FIELDS'", () => {
     const invalidData = {
-      field: "foo",
-      input: { foo: "bar" },
-      mapper: "RENAME_FIELD"
+      renameMappingChanges: [{
+        fieldName: "foo",
+        newFieldName: "fooo",
+      }],
+      mapper: "INVALID_MAPPER"
     };
-    const result = RenameFieldMapping.decode(invalidData);
-    expect(E.isRight(result)).toBeFalsy();
-  });
-  it("should not validate if input is missing", () => {
-    const invalidData = {
-      field: "foo",
-      newField: "fooo",
-      mapper: "RENAME_FIELD"
-    };
-    const result = RenameFieldMapping.decode(invalidData);
-    expect(E.isRight(result)).toBeFalsy();
-  });
-  it("should not validate if input is not an object", () => {
-    const invalidData = {
-      field: "foo",
-      input: "foo",
-      newField: "fooo",
-      mapper: "RENAME_FIELD"
-    };
-    const result = RenameFieldMapping.decode(invalidData);
+    const result = RenameFieldsMapping.decode(invalidData);
     expect(E.isRight(result)).toBeFalsy();
   });
 });
+
+describe("RenameMapping", () => {
+  it("should decode if config is a valid RenameMapping instance of RenameFields mapper", () => {
+    const validData = {
+      mapper: "RENAME_FIELDS",
+      renameMappingChanges: [{
+        fieldName: "foo",
+        newFieldName: "fooo",
+      }]
+    };
+    const result = RenameMapping.decode(validData);
+    expect(E.isRight(result)).toBeTruthy();
+  });
+
+  it("should decode if config is a valid RenameMapping instance of RenameField mapper", () => {
+    const validData = {
+      fieldName: "foo",
+      newFieldName: "fooo",
+      mapper: "RENAME_FIELD"
+    };
+    const result = RenameMapping.decode(validData);
+    expect(E.isRight(result)).toBeTruthy();
+  });
+
+  it("should not validate if config is an invalid RenameMapping", () => {
+    const invalidData = {
+      mapper: "INVALID",
+      otherProp: [] as any
+    };
+    const result = RenameMapping.decode(invalidData);
+    expect(E.isRight(result)).toBeFalsy();
+  });
+})
