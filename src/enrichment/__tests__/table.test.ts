@@ -91,4 +91,17 @@ describe("tableEnrich", () => {
       )
     )();
   });
+
+  it("should return flattened enriched input if table document is found and output field name is not provided", async () => {
+    getTableDocumentMock.mockImplementationOnce(() =>
+      TE.right(O.some({ baz: "baz" }))
+    );
+    await pipe(
+      tableEnrich(input, tableClientMock, "partitionKey", "rowKey"),
+      TE.bimap(
+        () => fail("it should not fail"),
+        result => expect(result).toEqual({ ...input, baz: "baz" })
+      )
+    )();
+  });
 });
