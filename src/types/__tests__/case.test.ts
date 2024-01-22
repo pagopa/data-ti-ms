@@ -13,4 +13,12 @@ describe("SwitchCaseMapping", () => {
     const result = SwitchCaseMapping.decode(validMapping);
     expect(E.isRight(result)).toBeTruthy();
   });
+  it("should not decode if cases is not an object", () => {
+    const invalidMapping = {
+      cases: "invalidCases",
+      defaultValue: "default"
+    };
+    const result = SwitchCaseMapping.decode(invalidMapping);
+    expect(E.isLeft(result)).toBeTruthy();
+  });
 });

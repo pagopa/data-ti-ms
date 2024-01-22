@@ -2,7 +2,7 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as t from "io-ts";
 
 export const RenameFieldConfig = t.type({
-  fieldName: NonEmptyString,
+  inputFieldName: NonEmptyString,
   newFieldName: NonEmptyString
 });
 export type RenameFieldConfig = t.TypeOf<typeof RenameFieldConfig>;
