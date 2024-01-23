@@ -6,6 +6,7 @@ import * as BS from "@azure/storage-blob";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { flattenField } from "../formatter/flatten";
 import { getBlobDocument } from "../utils/blobStorage";
 import { NotInKeys } from "../utils/types";
 import { toJsonObject } from "../utils/data";
@@ -36,10 +37,17 @@ export const blobEnrich = <T, K extends string>(
             outputFieldName,
             O.fromNullable,
             O.map(fieldName => ({ ...input, [fieldName]: blobDocumentObject })),
-            O.getOrElseW(() => ({
-              ...input,
-              ...blobDocumentObject
-            }))
+            O.getOrElseW(() =>
+              pipe(`${String(blobNameField)}_enrich`, flattenFieldName =>
+                flattenField(
+                  {
+                    ...input,
+                    [flattenFieldName]: blobDocumentObject
+                  },
+                  flattenFieldName
+                )
+              )
+            )
           )
         ),
         O.getOrElse(() => input)

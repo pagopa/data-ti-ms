@@ -6,6 +6,7 @@ import * as DT from "@azure/data-tables";
 import * as t from "io-ts";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
+import { flattenField } from "../formatter/flatten";
 import { getTableDocument } from "../utils/tableStorage";
 import { NotInKeys } from "../utils/types";
 
@@ -44,7 +45,19 @@ export const tableEnrich = <T, K extends string>(
             outputFieldName,
             O.fromNullable,
             O.map(fieldName => ({ ...input, [fieldName]: tableDocument })),
-            O.getOrElse(() => ({ ...input, ...tableDocument }))
+            O.getOrElse(() =>
+              pipe(
+                `${String(partitionKeyField)}_${String(rowKeyField)}_enrich`,
+                flattenFieldName =>
+                  flattenField(
+                    {
+                      ...input,
+                      [flattenFieldName]: tableDocument
+                    },
+                    flattenFieldName
+                  )
+              )
+            )
           )
         ),
         O.getOrElse(() => input)
