@@ -1,6 +1,8 @@
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as t from "io-ts";
 
 const MultiplyMapping = t.type({
+  inputFieldName: NonEmptyString,
   mapper: t.literal("MULTIPLY_NUMBER"),
   multiplier: t.number
 });
@@ -9,6 +11,7 @@ type MultiplyMapping = t.TypeOf<typeof MultiplyMapping>;
 
 const DivideMapping = t.type({
   divider: t.number,
+  inputFieldName: NonEmptyString,
   mapper: t.literal("DIVIDE_NUMBER")
 });
 
@@ -16,6 +19,7 @@ type DivideMapping = t.TypeOf<typeof DivideMapping>;
 
 const RoundMapping = t.type({
   decimals: t.number,
+  inputFieldName: NonEmptyString,
   mapper: t.literal("ROUND_NUMBER")
 });
 

@@ -79,6 +79,13 @@ const invalidRenameFieldMapping = {
   newFieldName: "bar"
 };
 
+const dateMapping = {
+  type: "SINGLE_INPUT",
+  inputFieldName: "foo",
+  dateString: "2023-12-19",
+  mapper: "DATE_TO_ISO"
+};
+
 describe("SingleInputMapping", () => {
   it("should decode a correct numberCaseMapping type properly", () => {
     const res = SingleInputMapping.decode(numberCaseMapping);
@@ -119,5 +126,9 @@ describe("SingleInputMapping", () => {
   it("should not decode an invalid renameFieldMapping type properly", () => {
     const res = SingleInputMapping.decode(invalidRenameFieldMapping);
     expect(E.isLeft(res)).toBeTruthy();
+  });
+  it("should decode a correct dateMapping type properly", () => {
+    const res = SingleInputMapping.decode(dateMapping);
+    expect(E.isRight(res)).toBeTruthy();
   });
 });

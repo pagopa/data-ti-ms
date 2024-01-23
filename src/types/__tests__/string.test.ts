@@ -1,35 +1,42 @@
-import * as E from "fp-ts/lib/Either";
+import * as E from "fp-ts/Either";
 import { StringMapping } from "../string";
 
 const upperCaseMapping = {
+  inputFieldName: "foo",
   mapper: "UPPER_CASE"
 };
 
 const lowerCaseMapping = {
+  inputFieldName: "foo",
   mapper: "LOWER_CASE"
 };
 
 const capitalizeMapping = {
+  inputFieldName: "foo",
   mapper: "CAPITALIZE"
 };
 
 const trimMapping = {
+  inputFieldName: "foo",
   mapper: "TRIM"
 };
 
 const replaceMapping = {
+  inputFieldName: "foo",
   mapper: "REPLACE",
   placeholder: "a",
   toBeReplaced: "b"
 };
 
 const replaceAllMapping = {
+  inputFieldName: "foo",
   mapper: "REPLACE",
   placeholder: "a",
   toBeReplaced: "b"
 };
 
 const invalidMapping = {
+  inputFieldName: "foo",
   mapper: "INVALID"
 };
 

@@ -1,6 +1,7 @@
 import * as t from "io-ts";
 import { BooleanMapping } from "./boolean";
 import { SwitchCaseMapping } from "./case";
+import { DateMapping } from "./date";
 import { NumberMapping } from "./number";
 import { RenameFieldMapping } from "./renameField";
 import { StringMapping } from "./string";
@@ -40,12 +41,18 @@ export const SingleInputSwitchCaseMapping = t.intersection([
   SwitchCaseMapping
 ]);
 
+export const SingleInputDateMapping = t.intersection([
+  SingleInputConfig,
+  DateMapping
+]);
+
 export const SingleInputMapping = t.union([
   SingleInputNumberMapping,
   SingleInputStringMapping,
   SingleInputBooleanMapping,
   SingleInputRenameFieldMapping,
-  SingleInputSwitchCaseMapping
+  SingleInputSwitchCaseMapping,
+  SingleInputDateMapping
 ]);
 
 export type SingleInputMapping = t.TypeOf<typeof SingleInputMapping>;

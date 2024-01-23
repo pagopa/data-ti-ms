@@ -4,6 +4,7 @@ import { BooleanMapping } from "../boolean";
 describe("BooleanToStringMapping", () => {
   it("should validate with correct values", () => {
     const validMapping = {
+      inputFieldName: "foo",
       falseString: "false",
       mapper: "BOOLEAN_TO_STRING",
       trueString: "true"
@@ -16,6 +17,7 @@ describe("BooleanToStringMapping", () => {
 
   it("should not validate with incorrect values", () => {
     const invalidMapping = {
+      inputFieldName: "foo",
       falseString: 123,
       mapper: "BOOLEAN_TO_STRING",
       trueString: "true"
