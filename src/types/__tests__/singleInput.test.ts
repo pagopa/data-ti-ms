@@ -106,6 +106,18 @@ const invalidConvertFormatMapping = {
   output: "invalid output string"
 };
 
+const flattenMapping = {
+  type: "SINGLE_INPUT",
+  inputFieldName: "foo",
+  mapper: "FLATTEN"
+};
+
+const invalidFlattenMapping = {
+  type: "SINGLE_INPUT",
+  inputFieldName: "foo",
+  mapper: "INVALID"
+};
+
 describe("SingleInputMapping", () => {
   it("should decode a correct numberCaseMapping type properly", () => {
     const res = SingleInputMapping.decode(numberCaseMapping);
@@ -161,6 +173,14 @@ describe("SingleInputMapping", () => {
   });
   it("should not decode an invalid convertFormatMapping type properly", () => {
     const res = SingleInputMapping.decode(invalidConvertFormatMapping);
+    expect(E.isLeft(res)).toBeTruthy();
+  });
+  it("should decode a correct flattenMapping type properly", () => {
+    const res = SingleInputMapping.decode(flattenMapping);
+    expect(E.isRight(res)).toBeTruthy();
+  });
+  it("should not decode an invalid flattenMapping type properly", () => {
+    const res = SingleInputMapping.decode(invalidFlattenMapping);
     expect(E.isLeft(res)).toBeTruthy();
   });
 });
