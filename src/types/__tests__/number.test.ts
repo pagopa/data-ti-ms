@@ -5,7 +5,6 @@ describe("NumberMapping", () => {
   describe("MULTIPLY_NUMBER", () => {
     it('should validate when multiplier is a number and mapper is "MULTIPLY_NUMBER"', () => {
       const validData = {
-        inputFieldName: "foo",
         multiplier: 5,
         mapper: "MULTIPLY_NUMBER"
       };
@@ -14,7 +13,6 @@ describe("NumberMapping", () => {
     });
     it("should not validate when multiplier is not a number", () => {
       const invalidData = {
-        inputFieldName: "foo",
         multiplier: "invalid",
         mapper: "MULTIPLY_NUMBER"
       };
@@ -23,7 +21,6 @@ describe("NumberMapping", () => {
     });
     it("should not validate when mapper is not 'MULTIPLY_NUMBER'", () => {
       const invalidData = {
-        inputFieldName: "foo",
         multiplier: 5,
         mapper: "INVALID_MAPPER"
       };
@@ -34,7 +31,6 @@ describe("NumberMapping", () => {
   describe("DIVIDE_NUMBER", () => {
     it('should validate when divider is a number and mapper is "DIVIDE_NUMBER"', () => {
       const validData = {
-        inputFieldName: "foo",
         divider: 5,
         mapper: "DIVIDE_NUMBER"
       };
@@ -46,7 +42,6 @@ describe("NumberMapping", () => {
 
     it("should not validate when divider is not a number", () => {
       const invalidData = {
-        inputFieldName: "foo",
         divider: "invalid",
         mapper: "DIVIDE_NUMBER"
       };
@@ -58,7 +53,6 @@ describe("NumberMapping", () => {
 
     it('should not validate when mapper is not "DIVIDE_NUMBER"', () => {
       const invalidData = {
-        inputFieldName: "foo",
         divider: 5,
         mapper: "INVALID_MAPPER"
       };
@@ -70,7 +64,6 @@ describe("NumberMapping", () => {
 
     it('should not validate when mapper is "DIVIDE_NUMBER" and decimals attribute is evaluated', () => {
       const invalidData = {
-        inputFieldName: "foo",
         decimals: 2,
         mapper: "DIVIDE_NUMBER"
       };
@@ -84,7 +77,6 @@ describe("NumberMapping", () => {
   describe("ROUND_NUMBER", () => {
     it('should validate when decimals is a number and mapper is "ROUND_NUMBER"', () => {
       const validData = {
-        inputFieldName: "foo",
         decimals: 5,
         mapper: "ROUND_NUMBER"
       };
@@ -96,7 +88,6 @@ describe("NumberMapping", () => {
 
     it("should not validate when decimals is not a number", () => {
       const invalidData = {
-        inputFieldName: "foo",
         decimals: "5",
         mapper: "ROUND_NUMBER"
       };
@@ -108,7 +99,6 @@ describe("NumberMapping", () => {
 
     it('should not validate when mapper is not "ROUND_NUMBER"', () => {
       const invalidData = {
-        inputFieldName: "foo",
         decimals: 5,
         mapper: "INVALID"
       };
@@ -120,7 +110,6 @@ describe("NumberMapping", () => {
 
     it('should not validate when mapper is "ROUND_NUMBER" and divider attribute is evaluated', () => {
       const invalidData = {
-        inputFieldName: "foo",
         divider: 2,
         mapper: "ROUND_NUMBER"
       };

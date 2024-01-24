@@ -1,3 +1,4 @@
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as t from "io-ts";
 import { BooleanMapping } from "./boolean";
 import { SwitchCaseMapping } from "./case";
@@ -10,11 +11,19 @@ const inputType = t.type({
   type: t.literal("SINGLE_INPUT")
 });
 
+const inputFieldName = t.type({
+  inputFieldName: NonEmptyString
+});
+
 const OutputFieldName = t.partial({
   outputFieldName: t.string
 });
 
-export const SingleInputConfig = t.intersection([inputType, OutputFieldName]);
+export const SingleInputConfig = t.intersection([
+  inputType,
+  inputFieldName,
+  OutputFieldName
+]);
 
 export const SingleInputNumberMapping = t.intersection([
   SingleInputConfig,

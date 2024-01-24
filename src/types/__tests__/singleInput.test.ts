@@ -17,6 +17,13 @@ const invalidNumberCaseMapping = {
   outputFieldName: "bar"
 };
 
+const anotherInvalidNumberCaseMapping = {
+  type: "SINGLE_INPUT",
+  divider: 10,
+  mapper: "DIVIDE_NUMBER",
+  outputFieldName: "bar"
+};
+
 const stringCaseMapping = {
   type: "SINGLE_INPUT",
   inputFieldName: "foo",
@@ -82,8 +89,21 @@ const invalidRenameFieldMapping = {
 const dateMapping = {
   type: "SINGLE_INPUT",
   inputFieldName: "foo",
-  dateString: "2023-12-19",
   mapper: "DATE_TO_ISO"
+};
+
+const convertFormatMapping = {
+  type: "SINGLE_INPUT",
+  inputFieldName: "foo",
+  mapper: "CONVERT_FORMAT",
+  output: "yyyy-MM-dd"
+};
+
+const invalidConvertFormatMapping = {
+  type: "SINGLE_INPUT",
+  inputFieldName: "foo",
+  mapper: "CONVERT_FORMAT",
+  output: "invalid output string"
 };
 
 describe("SingleInputMapping", () => {
@@ -111,6 +131,10 @@ describe("SingleInputMapping", () => {
     const res = SingleInputMapping.decode(invalidNumberCaseMapping);
     expect(E.isLeft(res)).toBeTruthy();
   });
+  it("should not decode another invalid numberCaseMapping properly", () => {
+    const res = SingleInputMapping.decode(anotherInvalidNumberCaseMapping);
+    expect(E.isLeft(res)).toBeTruthy();
+  });
   it("should not decode an invalid stringCaseMapping type properly", () => {
     const res = SingleInputMapping.decode(invalidStringCaseMapping);
     expect(E.isLeft(res)).toBeTruthy();
@@ -130,5 +154,13 @@ describe("SingleInputMapping", () => {
   it("should decode a correct dateMapping type properly", () => {
     const res = SingleInputMapping.decode(dateMapping);
     expect(E.isRight(res)).toBeTruthy();
+  });
+  it("should decode a correct convertFormatMapping type properly", () => {
+    const res = SingleInputMapping.decode(convertFormatMapping);
+    expect(E.isRight(res)).toBeTruthy();
+  });
+  it("should not decode an invalid convertFormatMapping type properly", () => {
+    const res = SingleInputMapping.decode(invalidConvertFormatMapping);
+    expect(E.isLeft(res)).toBeTruthy();
   });
 });

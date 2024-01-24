@@ -1,9 +1,7 @@
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as t from "io-ts";
+import { OutputFormat } from "../formatter/date";
 
 const DateStringToUtcFormatMapping = t.type({
-  dateString: NonEmptyString,
-  inputFieldName: NonEmptyString,
   mapper: t.literal("DATE_TO_UTC")
 });
 
@@ -12,16 +10,12 @@ type DateStringToUtcFormatMapping = t.TypeOf<
 >;
 
 const IsoToUtcFormatMapping = t.type({
-  inputFieldName: NonEmptyString,
-  isoString: NonEmptyString,
   mapper: t.literal("ISO_TO_UTC")
 });
 
 type IsoToUtcFormatMapping = t.TypeOf<typeof IsoToUtcFormatMapping>;
 
 const DateStringToIsoFormatMapping = t.type({
-  dateString: NonEmptyString,
-  inputFieldName: NonEmptyString,
   mapper: t.literal("DATE_TO_ISO")
 });
 type DateStringToIsoFormatMapping = t.TypeOf<
@@ -29,8 +23,6 @@ type DateStringToIsoFormatMapping = t.TypeOf<
 >;
 
 const DateStringToTimestampFormatMapping = t.type({
-  dateString: NonEmptyString,
-  inputFieldName: NonEmptyString,
   mapper: t.literal("DATE_TO_TIMESTAMP")
 });
 type DateStringToTimestampFormatMapping = t.TypeOf<
@@ -38,10 +30,14 @@ type DateStringToTimestampFormatMapping = t.TypeOf<
 >;
 
 const DateStringFromTimestampFormatMapping = t.type({
-  inputFieldName: NonEmptyString,
-  mapper: t.literal("DATE_FROM_TIMESTAMP"),
-  timestamp: t.number
+  mapper: t.literal("DATE_FROM_TIMESTAMP")
 });
+
+const CovertFormat = t.type({
+  output: OutputFormat
+});
+
+type CovertFormat = t.TypeOf<typeof CovertFormat>;
 
 type DateStringFromTimestampFormatMapping = t.TypeOf<
   typeof DateStringFromTimestampFormatMapping
@@ -52,5 +48,6 @@ export const DateMapping = t.union([
   IsoToUtcFormatMapping,
   DateStringToIsoFormatMapping,
   DateStringToTimestampFormatMapping,
-  DateStringFromTimestampFormatMapping
+  DateStringFromTimestampFormatMapping,
+  CovertFormat
 ]);

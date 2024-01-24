@@ -4,7 +4,6 @@ import { RenameFieldMapping, RenameMapping } from "../renameField";
 describe("RenameFieldMapping", () => {
   it("should decode if config is a valid RenameFieldMapping", () => {
     const validData = {
-      inputFieldName: "foo",
       newFieldName: "fooo",
       mapper: "RENAME_FIELD"
     };
@@ -13,8 +12,7 @@ describe("RenameFieldMapping", () => {
   });
   it("should not validate if config is not a valid input", () => {
     const invalidData = {
-      invalidInputField: "foo",
-      newFieldName: "fooo",
+      newFieldName: "",
       mapper: "RENAME_FIELD"
     };
     const result = RenameFieldMapping.decode(invalidData);
@@ -22,7 +20,6 @@ describe("RenameFieldMapping", () => {
   });
   it("should not validate if mapper is not 'RENAME_FIELD'", () => {
     const invalidData = {
-      inputFieldName: "foo",
       newFieldName: "fooo",
       mapper: "INVALID_MAPPER"
     };
@@ -48,7 +45,6 @@ describe("RenameMapping", () => {
 
   it("should decode if config is a valid RenameMapping instance of RenameField mapper", () => {
     const validData = {
-      inputFieldName: "foo",
       newFieldName: "fooo",
       mapper: "RENAME_FIELD"
     };

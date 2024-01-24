@@ -8,7 +8,6 @@ describe("SwitchCaseMapping", () => {
         case1: "value1",
         case2: "value2"
       },
-      inputFieldName: "foo",
       defaultValue: "default"
     };
     const result = SwitchCaseMapping.decode(validMapping);
@@ -16,7 +15,6 @@ describe("SwitchCaseMapping", () => {
   });
   it("should not decode if cases is not an object", () => {
     const invalidMapping = {
-      inputFieldName: "foo",
       cases: "invalidCases",
       defaultValue: "default"
     };
