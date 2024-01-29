@@ -15,8 +15,7 @@ export const RenameFieldMapping = t.intersection([
 export type RenameFieldMapping = t.TypeOf<typeof RenameFieldMapping>;
 
 export const RenameFieldsMapping = t.type({
-  mapper: t.literal("RENAME_FIELDS"),
-  renameMappingChanges: t.readonlyArray(RenameFieldConfig)
+  mapper: t.literal("RENAME_FIELDS")
 });
 export type RenameFieldsMapping = t.TypeOf<typeof RenameFieldsMapping>;
 
