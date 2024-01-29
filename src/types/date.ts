@@ -33,12 +33,6 @@ const DateStringFromTimestampFormatMapping = t.type({
   mapper: t.literal("DATE_FROM_TIMESTAMP")
 });
 
-const CovertFormat = t.type({
-  output: OutputFormat
-});
-
-type CovertFormat = t.TypeOf<typeof CovertFormat>;
-
 type DateStringFromTimestampFormatMapping = t.TypeOf<
   typeof DateStringFromTimestampFormatMapping
 >;
@@ -48,6 +42,13 @@ export const DateMapping = t.union([
   IsoToUtcFormatMapping,
   DateStringToIsoFormatMapping,
   DateStringToTimestampFormatMapping,
-  DateStringFromTimestampFormatMapping,
-  CovertFormat
+  DateStringFromTimestampFormatMapping
 ]);
+
+export type DateMapping = t.TypeOf<typeof DateMapping>;
+
+export const ConvertFormatMapping = t.type({
+  output: OutputFormat
+});
+
+export type ConvertFormatMapping = t.TypeOf<typeof ConvertFormatMapping>;

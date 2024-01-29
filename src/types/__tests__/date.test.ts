@@ -1,5 +1,5 @@
 import * as E from "fp-ts/Either";
-import { DateMapping } from "../date";
+import { ConvertFormatMapping, DateMapping } from "../date";
 
 describe("DateMapping", () => {
   it("should decode a correct DATE_TO_ISO type properly", () => {
@@ -37,12 +37,19 @@ describe("DateMapping", () => {
     const res = DateMapping.decode(validData);
     expect(E.isRight(res)).toBeTruthy();
   });
-  it("should decode a correct CONVERT_FORMAT type properly", () => {
+  it("should not decode an invalid dateMapping type properly", () => {
+    const invalidData = {
+      mapper: "INVALID MAPPER"
+    };
+    const res = DateMapping.decode(invalidData);
+    expect(E.isLeft(res)).toBeTruthy();
+  });
+  it("should decode a valid ConvertFormatMapping type properly", () => {
     const validData = {
       mapper: "CONVERT_FORMAT",
       output: "yyyy-MM-dd"
     };
-    const res = DateMapping.decode(validData);
+    const res = ConvertFormatMapping.decode(validData);
     expect(E.isRight(res)).toBeTruthy();
   });
   it("should not decode an invalid CONVERT_FORMAT type properly", () => {
@@ -50,14 +57,7 @@ describe("DateMapping", () => {
       mapper: "CONVERT_FORMAT",
       output: "INVALID FORMAT"
     };
-    const res = DateMapping.decode(invalidData);
-    expect(E.isLeft(res)).toBeTruthy();
-  });
-  it("should not decode an invalid dateMapping type properly", () => {
-    const invalidData = {
-      mapper: "INVALID MAPPER"
-    };
-    const res = DateMapping.decode(invalidData);
+    const res = ConvertFormatMapping.decode(invalidData);
     expect(E.isLeft(res)).toBeTruthy();
   });
 });

@@ -2,7 +2,7 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as t from "io-ts";
 import { BooleanMapping } from "./boolean";
 import { SwitchCaseMapping } from "./case";
-import { DateMapping } from "./date";
+import { ConvertFormatMapping, DateMapping } from "./date";
 import { FlattenMapping } from "./flatten";
 import { NumberMapping } from "./number";
 import { RenameFieldMapping } from "./renameField";
@@ -56,6 +56,11 @@ export const SingleInputDateMapping = t.intersection([
   DateMapping
 ]);
 
+export const SingleInputConvertFormatMapping = t.intersection([
+  SingleInputConfig,
+  ConvertFormatMapping
+]);
+
 export const SingleInputFlattenMapping = t.intersection([
   SingleInputConfig,
   FlattenMapping
@@ -68,6 +73,7 @@ export const SingleInputMapping = t.union([
   SingleInputRenameFieldMapping,
   SingleInputSwitchCaseMapping,
   SingleInputDateMapping,
+  SingleInputConvertFormatMapping,
   SingleInputFlattenMapping
 ]);
 
