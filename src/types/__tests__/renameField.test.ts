@@ -34,13 +34,7 @@ describe("RenameFieldMapping", () => {
 describe("RenameMapping", () => {
   it("should decode if config is a valid RenameMapping instance of RenameFields mapper", () => {
     const validData = {
-      mapper: "RENAME_FIELDS",
-      renameMappingChanges: [
-        {
-          inputFieldName: "foo",
-          newFieldName: "fooo"
-        }
-      ]
+      mapper: "RENAME_FIELDS"
     };
     const result = RenameMapping.decode(validData);
     expect(E.isRight(result)).toBeTruthy();
