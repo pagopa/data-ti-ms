@@ -62,7 +62,7 @@ export const dateStringFromTimestampFormat = (
     )
   );
 
-const OutputFormat = t.union([
+export const OutputFormat = t.union([
   t.literal("yyyy-MM-dd"),
   t.literal("yyyy-MM-dd HH:mm"),
   t.literal("yyyy-MM-dd HH:mm:ss")

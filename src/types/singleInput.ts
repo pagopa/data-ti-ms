@@ -1,6 +1,9 @@
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as t from "io-ts";
 import { BooleanMapping } from "./boolean";
 import { SwitchCaseMapping } from "./case";
+import { ConvertFormatMapping, DateMapping } from "./date";
+import { FlattenMapping } from "./flatten";
 import { NumberMapping } from "./number";
 import { RenameFieldMapping } from "./renameField";
 import { StringMapping } from "./string";
@@ -9,11 +12,19 @@ const inputType = t.type({
   type: t.literal("SINGLE_INPUT")
 });
 
+const inputFieldName = t.type({
+  inputFieldName: NonEmptyString
+});
+
 const OutputFieldName = t.partial({
   outputFieldName: t.string
 });
 
-export const SingleInputConfig = t.intersection([inputType, OutputFieldName]);
+export const SingleInputConfig = t.intersection([
+  inputType,
+  inputFieldName,
+  OutputFieldName
+]);
 
 export const SingleInputNumberMapping = t.intersection([
   SingleInputConfig,
@@ -40,12 +51,30 @@ export const SingleInputSwitchCaseMapping = t.intersection([
   SwitchCaseMapping
 ]);
 
+export const SingleInputDateMapping = t.intersection([
+  SingleInputConfig,
+  DateMapping
+]);
+
+export const SingleInputConvertFormatMapping = t.intersection([
+  SingleInputConfig,
+  ConvertFormatMapping
+]);
+
+export const SingleInputFlattenMapping = t.intersection([
+  SingleInputConfig,
+  FlattenMapping
+]);
+
 export const SingleInputMapping = t.union([
   SingleInputNumberMapping,
   SingleInputStringMapping,
   SingleInputBooleanMapping,
   SingleInputRenameFieldMapping,
-  SingleInputSwitchCaseMapping
+  SingleInputSwitchCaseMapping,
+  SingleInputDateMapping,
+  SingleInputConvertFormatMapping,
+  SingleInputFlattenMapping
 ]);
 
 export type SingleInputMapping = t.TypeOf<typeof SingleInputMapping>;
