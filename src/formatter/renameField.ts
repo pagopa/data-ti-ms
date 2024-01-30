@@ -1,17 +1,20 @@
 import { ITuple2 } from "@pagopa/ts-commons/lib/tuples";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
-
 import { pipe } from "fp-ts/function";
-
-type NotInKeys<T, K extends string> = K extends keyof T ? never : K;
+import { NotInKeys } from "../utils/types";
 
 export const renameField = <T, R extends keyof T, K extends string>(
   input: T,
-  field: R,
-  newField: NotInKeys<T, K>
+  inputFieldName: R,
+  newFieldName: NotInKeys<T, K>
 ): T =>
-  pipe({ ...input, [field]: undefined, [newField]: input[field] }, res =>
-    withoutUndefinedValues(res)
+  pipe(
+    {
+      ...input,
+      [inputFieldName]: undefined,
+      [newFieldName]: input[inputFieldName]
+    },
+    res => withoutUndefinedValues(res)
   );
 
 export const renameFields = <T, R extends keyof T, K extends string>(
