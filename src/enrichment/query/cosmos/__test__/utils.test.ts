@@ -26,6 +26,10 @@ const mockClient: CosmosClient = ({
 } as unknown) as CosmosClient;
 
 describe("findByKey", () => {
+  beforeEach(() => {
+    jest.resetModules();
+    jest.clearAllMocks();
+  });
   it("should return Some(unknown) when the item is found", async () => {
     const result = await findByKey(
       mockClient,
@@ -120,11 +124,10 @@ describe("findByKey", () => {
   });
 
   it("should return None when the item is not found", async () => {
-    itemReadMock.mockImplementationOnce(() => {
-      {
+    itemReadMock.mockResolvedValueOnce({
+      resource:
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        undefined;
-      }
+        undefined
     });
     const result = await findByKey(
       mockClient,
@@ -136,7 +139,13 @@ describe("findByKey", () => {
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
     expect(mockItem).toHaveBeenCalledWith(itemId, undefined);
-    expect(result).toEqual(E.right(O.some({ id: "id" })));
+    expect(result).toEqual(E.right(O.none));
+
+    itemReadMock.mockResolvedValueOnce({
+      resource:
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        undefined
+    });
 
     const resultPartitionKey = await findByKey(
       mockClient,
