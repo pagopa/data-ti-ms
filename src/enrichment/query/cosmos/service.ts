@@ -28,7 +28,8 @@ export interface IQueueEnrichment {
     versionFieldName: string,
     versionFieldValue: string,
     id: string,
-    partitionKey?: string
+    partitionKeyField: string,
+    partitionKeyValue: string
   ) => TE.TaskEither<Error, ReadonlyArray<unknown>>;
 }
 
