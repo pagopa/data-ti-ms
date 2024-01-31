@@ -33,14 +33,15 @@ export const getQuery = (
   id: string,
   versionFieldName: string,
   versionFieldValue: string,
-  partitionKey: string
+  partitionKeyField: string,
+  partitionKeyValue: string
 ): SqlQuerySpec => ({
   parameters: [
     { name: `@${versionFieldName}`, value: `${versionFieldValue}` },
     { name: `@id`, value: `${id}` },
-    { name: `@partitionKey`, value: `${partitionKey}` }
+    { name: `@${partitionKeyField}`, value: `${partitionKeyValue}` }
   ],
-  query: `SELECT * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.partitionKey = @partitionKey`
+  query: `SELECT * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.${partitionKeyField} = @${partitionKeyField}`
 });
 
 export const findLastVersionByKey = (
@@ -50,7 +51,8 @@ export const findLastVersionByKey = (
   versionFieldName: string,
   versionFieldValue: string,
   id: string,
-  partitionKey: string
+  partitionKeyField: string,
+  partitionKeyValue: string
 ): TE.TaskEither<Error, ReadonlyArray<unknown>> =>
   pipe(
     TE.tryCatch(
@@ -64,7 +66,8 @@ export const findLastVersionByKey = (
               id,
               versionFieldName,
               versionFieldValue,
-              partitionKey
+              partitionKeyField,
+              partitionKeyValue
             )
           )
           .fetchAll(),
