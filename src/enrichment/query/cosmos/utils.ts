@@ -33,25 +33,15 @@ export const getQuery = (
   id: string,
   versionFieldName: string,
   versionFieldValue: string,
-  partitionKey?: string
-): SqlQuerySpec => {
-  const parameters = [
+  partitionKey: string
+): SqlQuerySpec => ({
+  parameters: [
     { name: `@${versionFieldName}`, value: `${versionFieldValue}` },
-    { name: `@id`, value: `${id}` }
-  ];
-
-  let query = `SELECT * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName}`;
-
-  if (partitionKey) {
-    query += ` AND f.partitionKey = @partitionKey`;
-    parameters.push({ name: `@partitionKey`, value: `${partitionKey}` });
-  }
-
-  return {
-    parameters,
-    query
-  };
-};
+    { name: `@id`, value: `${id}` },
+    { name: `@partitionKey`, value: `${partitionKey}` }
+  ],
+  query: `SELECT * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.partitionKey = @partitionKey`
+});
 
 export const findLastVersionByKey = (
   client: CosmosClient,
@@ -60,7 +50,7 @@ export const findLastVersionByKey = (
   versionFieldName: string,
   versionFieldValue: string,
   id: string,
-  partitionKey?: string
+  partitionKey: string
 ): TE.TaskEither<Error, ReadonlyArray<unknown>> =>
   pipe(
     TE.tryCatch(

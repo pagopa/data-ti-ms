@@ -42,18 +42,6 @@ describe("findByKey", () => {
     jest.clearAllMocks();
   });
   it("should return Some(unknown) when the item is found", async () => {
-    const result = await findByKey(
-      mockClient,
-      databaseName,
-      containerName,
-      itemId
-    )();
-
-    expect(mockDatabase).toHaveBeenCalledWith(databaseName);
-    expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(mockItem).toHaveBeenCalledWith(itemId, undefined);
-    expect(result).toEqual(E.right(O.some({ id: "id" })));
-
     const resultPartitionKey = await findByKey(
       mockClient,
       databaseName,
@@ -183,22 +171,6 @@ describe("findLastVersionByKey", () => {
   });
 
   it("should return Some(unknown) when the item is found", async () => {
-    const result = await findLastVersionByKey(
-      mockClient,
-      databaseName,
-      containerName,
-      versionFieldName,
-      versionFieldValue,
-      itemId
-    )();
-
-    expect(mockDatabase).toHaveBeenCalledWith(databaseName);
-    expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(itemQueryMock).toHaveBeenCalledWith(
-      getQuery(containerName, itemId, versionFieldName, versionFieldValue)
-    );
-    expect(result).toEqual(E.right([{ id: "id" }]));
-
     const resultPartitionKey = await findLastVersionByKey(
       mockClient,
       databaseName,
@@ -234,7 +206,8 @@ describe("findLastVersionByKey", () => {
       containerName,
       versionFieldName,
       versionFieldValue,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -256,7 +229,8 @@ describe("findLastVersionByKey", () => {
       containerName,
       versionFieldName,
       versionFieldValue,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -279,13 +253,20 @@ describe("findLastVersionByKey", () => {
       containerName,
       versionFieldName,
       versionFieldValue,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
     expect(itemQueryMock).toHaveBeenCalledWith(
-      getQuery(containerName, itemId, versionFieldName, versionFieldValue)
+      getQuery(
+        containerName,
+        itemId,
+        versionFieldName,
+        versionFieldValue,
+        partitionKey
+      )
     );
 
     expect(itemContainer).toEqual(
@@ -308,13 +289,20 @@ describe("findLastVersionByKey", () => {
       containerName,
       versionFieldName,
       versionFieldValue,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
     expect(itemQueryMock).toHaveBeenCalledWith(
-      getQuery(containerName, itemId, versionFieldName, versionFieldValue)
+      getQuery(
+        containerName,
+        itemId,
+        versionFieldName,
+        versionFieldValue,
+        partitionKey
+      )
     );
     expect(result).toEqual(E.right([]));
 
