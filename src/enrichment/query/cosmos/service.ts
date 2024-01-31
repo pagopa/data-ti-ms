@@ -1,34 +1,27 @@
 import { CosmosClient } from "@azure/cosmos";
-import { KafkaConsumerCompact } from "@pagopa/fp-ts-kafkajs/dist/lib/KafkaConsumerCompact";
 import * as E from "fp-ts/Either";
+import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/function";
-import { EachMessageHandler } from "kafkajs";
 import { findByKey, findLastVersionByKey } from "./utils";
-export type MessageHandler = EachMessageHandler;
-export type QueueConsumer = KafkaConsumerCompact;
 
 export type QueryClient = CosmosClient;
 
 export interface IQueueEnrichment {
   readonly findByKey: (
-    client: QueryClient
-  ) => (
     database: string,
     containerName: string,
     id: string,
     partitionKey?: string
-  ) => TE.TaskEither<Error, void>;
+  ) => TE.TaskEither<Error, O.Option<unknown>>;
 
   readonly findLastVersionByKey: (
-    client: QueryClient
-  ) => (
     database: string,
     containerName: string,
     versionFieldName: string,
     versionFieldValue: string,
     id: string,
-    partitionKey?: string
+    partitionKey: string
   ) => TE.TaskEither<Error, ReadonlyArray<unknown>>;
 }
 
