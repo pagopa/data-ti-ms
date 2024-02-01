@@ -10,7 +10,7 @@ export const findByKey = (
   database: string,
   containerName: string,
   id: string,
-  partitionKey?: string
+  partitionKey: string
 ): TE.TaskEither<Error, O.Option<unknown>> =>
   pipe(
     TE.tryCatch(

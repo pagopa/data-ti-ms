@@ -65,7 +65,8 @@ describe("findByKey", () => {
       mockClient,
       databaseName,
       containerName,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -85,7 +86,8 @@ describe("findByKey", () => {
       mockClient,
       databaseName,
       containerName,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -106,12 +108,13 @@ describe("findByKey", () => {
       mockClient,
       databaseName,
       containerName,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(mockItem).toHaveBeenCalledWith(itemId, undefined);
+    expect(mockItem).toHaveBeenCalledWith(itemId, partitionKey);
 
     expect(itemContainer).toEqual(
       E.left(
@@ -132,12 +135,13 @@ describe("findByKey", () => {
       mockClient,
       databaseName,
       containerName,
-      itemId
+      itemId,
+      partitionKey
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(mockItem).toHaveBeenCalledWith(itemId, undefined);
+    expect(mockItem).toHaveBeenCalledWith(itemId, partitionKey);
     expect(result).toEqual(E.right(O.none));
 
     itemReadMock.mockResolvedValueOnce({
