@@ -17,7 +17,7 @@ export interface IQueueEnrichment {
     database: string,
     containerName: string,
     id: string,
-    partitionKey?: string
+    partitionKey: string
   ) => TE.TaskEither<Error, void>;
 
   readonly findLastVersionByKey: (
