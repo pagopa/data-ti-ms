@@ -191,7 +191,7 @@ describe("findLastVersionByKey", () => {
         partitionKeyValue
       )
     );
-    expect(resultPartitionKey).toEqual(E.right([{ id: "id" }]));
+    expect(resultPartitionKey).toEqual(E.right(O.some({ id: "id" })));
   });
 
   it("should return an error when an error occurs", async () => {
@@ -305,6 +305,6 @@ describe("findLastVersionByKey", () => {
         partitionKeyValue
       )
     );
-    expect(result).toEqual(E.right([]));
+    expect(result).toEqual(E.right(O.none));
   });
 });
