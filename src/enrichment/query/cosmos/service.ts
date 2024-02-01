@@ -23,7 +23,7 @@ export interface IQueueEnrichment {
     id: string,
     partitionKeyField: string,
     partitionKeyValue: string
-  ) => TE.TaskEither<Error, ReadonlyArray<unknown>>;
+  ) => TE.TaskEither<Error, O.Option<unknown>>;
 }
 
 export const createCosmosQueryEnrichmentService = (

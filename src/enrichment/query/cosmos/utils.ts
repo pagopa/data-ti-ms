@@ -3,6 +3,7 @@
 /* eslint-disable functional/no-let */
 import { CosmosClient, SqlQuerySpec } from "@azure/cosmos";
 import * as O from "fp-ts/Option";
+import * as RA from "fp-ts/ReadonlyArray";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/function";
 export const findByKey = (client: CosmosClient) => (
@@ -56,7 +57,7 @@ export const findLastVersionByKey = (client: CosmosClient) => (
   id: string,
   partitionKeyField: string,
   partitionKeyValue: string
-): TE.TaskEither<Error, ReadonlyArray<unknown>> =>
+): TE.TaskEither<Error, O.Option<unknown>> =>
   pipe(
     TE.tryCatch(
       () =>
@@ -81,5 +82,6 @@ export const findLastVersionByKey = (client: CosmosClient) => (
           )}`
         )
     ),
-    TE.map(resp => resp.resources)
+    TE.map(resp => resp.resources),
+    TE.map(RA.head)
   );
