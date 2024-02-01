@@ -1,6 +1,5 @@
 import { CosmosClient } from "@azure/cosmos";
 import * as E from "fp-ts/Either";
-import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/function";
 import { findByKey, findLastVersionByKey } from "./utils";
@@ -12,8 +11,8 @@ export interface IQueueEnrichment {
     database: string,
     containerName: string,
     id: string,
-    partitionKey?: string
-  ) => TE.TaskEither<Error, O.Option<unknown>>;
+    partitionKey: string
+  ) => TE.TaskEither<Error, void>;
 
   readonly findLastVersionByKey: (
     database: string,
