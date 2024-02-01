@@ -9,7 +9,7 @@ export const findByKey = (client: CosmosClient) => (
   database: string,
   containerName: string,
   id: string,
-  partitionKey?: string
+  partitionKey: string
 ): TE.TaskEither<Error, O.Option<unknown>> =>
   pipe(
     TE.tryCatch(
@@ -40,7 +40,7 @@ export const getQuery = (
     { name: `@id`, value: `${id}` },
     { name: `@${partitionKeyField}`, value: `${partitionKeyValue}` }
   ],
-  query: `SELECT * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.${partitionKeyField} = @${partitionKeyField}`
+  query: `SELECT TOP 1 * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.${partitionKeyField} = @${partitionKeyField} ORDER BY f.${versionFieldName} DESC`
 });
 
 export const findLastVersionByKey = (client: CosmosClient) => (
