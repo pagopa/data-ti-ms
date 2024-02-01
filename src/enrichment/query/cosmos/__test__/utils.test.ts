@@ -42,8 +42,7 @@ describe("findByKey", () => {
     jest.clearAllMocks();
   });
   it("should return Some(unknown) when the item is found", async () => {
-    const resultPartitionKey = await findByKey(
-      mockClient,
+    const resultPartitionKey = await findByKey(mockClient)(
       databaseName,
       containerName,
       itemId,
@@ -61,8 +60,7 @@ describe("findByKey", () => {
       throw Error("Error while getting database");
     });
 
-    const result = await findByKey(
-      mockClient,
+    const result = await findByKey(mockClient)(
       databaseName,
       containerName,
       itemId,
@@ -82,8 +80,7 @@ describe("findByKey", () => {
       throw Error("Error while getting container");
     });
 
-    const resultContainer = await findByKey(
-      mockClient,
+    const resultContainer = await findByKey(mockClient)(
       databaseName,
       containerName,
       itemId,
@@ -104,8 +101,7 @@ describe("findByKey", () => {
       throw Error("Error while getting container");
     });
 
-    const itemContainer = await findByKey(
-      mockClient,
+    const itemContainer = await findByKey(mockClient)(
       databaseName,
       containerName,
       itemId,
@@ -131,8 +127,7 @@ describe("findByKey", () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         undefined
     });
-    const result = await findByKey(
-      mockClient,
+    const result = await findByKey(mockClient)(
       databaseName,
       containerName,
       itemId,
@@ -150,8 +145,7 @@ describe("findByKey", () => {
         undefined
     });
 
-    const resultPartitionKey = await findByKey(
-      mockClient,
+    const resultPartitionKey = await findByKey(mockClient)(
       databaseName,
       containerName,
       itemId,
@@ -175,8 +169,7 @@ describe("findLastVersionByKey", () => {
   });
 
   it("should return Some(unknown) when the item is found", async () => {
-    const resultPartitionKey = await findLastVersionByKey(
-      mockClient,
+    const resultPartitionKey = await findLastVersionByKey(mockClient)(
       databaseName,
       containerName,
       versionFieldName,
@@ -206,8 +199,7 @@ describe("findLastVersionByKey", () => {
       throw Error("Error while getting database");
     });
 
-    const result = await findLastVersionByKey(
-      mockClient,
+    const result = await findLastVersionByKey(mockClient)(
       databaseName,
       containerName,
       versionFieldName,
@@ -230,8 +222,7 @@ describe("findLastVersionByKey", () => {
       throw Error("Error while getting container");
     });
 
-    const resultContainer = await findLastVersionByKey(
-      mockClient,
+    const resultContainer = await findLastVersionByKey(mockClient)(
       databaseName,
       containerName,
       versionFieldName,
@@ -255,8 +246,7 @@ describe("findLastVersionByKey", () => {
       throw Error("Error while getting container");
     });
 
-    const itemContainer = await findLastVersionByKey(
-      mockClient,
+    const itemContainer = await findLastVersionByKey(mockClient)(
       databaseName,
       containerName,
       versionFieldName,
@@ -293,8 +283,7 @@ describe("findLastVersionByKey", () => {
       resources: []
     });
 
-    const result = await findLastVersionByKey(
-      mockClient,
+    const result = await findLastVersionByKey(mockClient)(
       databaseName,
       containerName,
       versionFieldName,

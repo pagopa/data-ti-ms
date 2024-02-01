@@ -6,8 +6,7 @@ import * as O from "fp-ts/Option";
 import * as RA from "fp-ts/ReadonlyArray";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/function";
-export const findByKey = (
-  client: CosmosClient,
+export const findByKey = (client: CosmosClient) => (
   database: string,
   containerName: string,
   id: string,
@@ -45,8 +44,7 @@ export const getQuery = (
   query: `SELECT TOP 1 * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.${partitionKeyField} = @${partitionKeyField} ORDER BY f.${versionFieldName} DESC`
 });
 
-export const findLastVersionByKey = (
-  client: CosmosClient,
+export const findLastVersionByKey = (client: CosmosClient) => (
   database: string,
   containerName: string,
   versionFieldName: string,
