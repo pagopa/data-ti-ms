@@ -31,11 +31,8 @@ export const createCosmosQueryEnrichmentService = (
 ): E.Either<Error, IQueueEnrichment> =>
   pipe(
     E.tryCatch(() => new CosmosClient(connectionString), E.toError),
-    E.map(
-      client =>
-        (({
-          findByKey: findByKey(client),
-          findLastVersionByKey: findLastVersionByKey(client)
-        } as unknown) as IQueueEnrichment)
-    )
+    E.map(client => ({
+      findByKey: findByKey(client),
+      findLastVersionByKey: findLastVersionByKey(client)
+    }))
   );
