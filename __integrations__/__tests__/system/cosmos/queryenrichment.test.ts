@@ -103,7 +103,7 @@ describe("findByKey", () => {
 });
 
 describe("findByLastVersionKey", () => {
-  it("should return a not empty array when the item is found with the last version", async () => {
+  it("should return Some(unknown) when the item is found with the last version", async () => {
     return await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
@@ -124,19 +124,23 @@ describe("findByLastVersionKey", () => {
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },
-        (result) => {
-          expect(result).toHaveLength(1);
-          expect(result[0]).toMatchObject({
-            id: COLLECTION_ID_VERSION,
-            key: COLLECTION_PARTITION_KEY_VALUE,
-            version: VERSION_FIELD_VALUE,
-          });
-        },
+        O.fold(
+          () => {
+            throw new Error("it should be some");
+          },
+          (result) => {
+            expect(result).toMatchObject({
+              id: COLLECTION_ID_VERSION,
+              key: COLLECTION_PARTITION_KEY_VALUE,
+              version: VERSION_FIELD_VALUE,
+            });
+          },
+        ),
       ),
     )();
   });
 
-  it("should return an empty array when the item is not found with the specific version", async () => {
+  it("should return None(unknown) when the item is not found with the specific version", async () => {
     await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
@@ -157,7 +161,12 @@ describe("findByLastVersionKey", () => {
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },
-        (result) => expect(result).toHaveLength(0),
+        O.fold(
+          () => constVoid(),
+          () => {
+            throw new Error("it should be none");
+          },
+        ),
       ),
     )();
   });

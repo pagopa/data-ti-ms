@@ -35,19 +35,14 @@ export const getQuery = (
   versionFieldValue: string,
   partitionKeyField: string,
   partitionKeyValue: string
-): SqlQuerySpec => {
-  const query = {
-    parameters: [
-      { name: `@${versionFieldName}`, value: `${versionFieldValue}` },
-      { name: `@id`, value: `${id}` },
-      { name: `@${partitionKeyField}`, value: `${partitionKeyValue}` }
-    ],
-    query: `SELECT TOP 1 * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.${partitionKeyField} = @${partitionKeyField} ORDER BY f.${versionFieldName} DESC`
-  };
-  // eslint-disable-next-line no-console
-  console.log(query);
-  return query;
-};
+): SqlQuerySpec => ({
+  parameters: [
+    { name: `@${versionFieldName}`, value: `${versionFieldValue}` },
+    { name: `@id`, value: `${id}` },
+    { name: `@${partitionKeyField}`, value: `${partitionKeyValue}` }
+  ],
+  query: `SELECT TOP 1 * FROM ${containerName} f WHERE  f.id = @id AND f.${versionFieldName} = @${versionFieldName} AND f.${partitionKeyField} = @${partitionKeyField} ORDER BY f.${versionFieldName} DESC`
+});
 
 export const findLastVersionByKey = (client: CosmosClient) => (
   database: string,
@@ -75,11 +70,9 @@ export const findLastVersionByKey = (client: CosmosClient) => (
             )
           )
           .fetchAll(),
-      err =>
+      () =>
         new Error(
-          `Impossible to get last version of the item ${id} from container ${containerName} - ${JSON.stringify(
-            err
-          )}`
+          `Impossible to get last version of the item ${id} from container ${containerName}`
         )
     ),
     TE.map(resp => resp.resources),
