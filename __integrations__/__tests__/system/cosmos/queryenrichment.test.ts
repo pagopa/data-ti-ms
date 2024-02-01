@@ -9,9 +9,11 @@ import {
   COLLECTION_ID_KEY,
   COLLECTION_ID_VERSION,
   COLLECTION_PARTITION_KEY,
+  COLLECTION_PARTITION_KEY_VALUE,
   COSMOS_COLLECTION_NAME,
   VERSION_FIELD_NAME,
   VERSION_FIELD_VALUE,
+  WRONG_VERSION_FIELD_VALUE,
   createCosmosDbAndCollections,
   deleteDatabase,
 } from "../../../utils/cosmos";
@@ -37,29 +39,9 @@ afterAll(async () => {
     }),
   )();
 });
-describe("findByKey", () => {
-  it("should return Some(unknown) when the item is found - find only by id", async () => {
-    await pipe(
-      createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
-      TE.fromEither,
-      TE.chain((service) =>
-        service.findByKey(COSMOSDB_NAME, COSMOS_COLLECTION_NAME, COLLECTION_ID),
-      ),
-      TE.bimap(
-        (err) => {
-          fail(
-            `it should not fail while finding an existing document - ${err.message}`,
-          );
-        },
-        O.fold(
-          () => fail("it should be some"),
-          (result) => expect(result).toMatchObject({ id: COLLECTION_ID }),
-        ),
-      ),
-    )();
-  });
 
-  it("should return Some(unknown) when the item is found - find by id and partition key", async () => {
+describe("findByKey", () => {
+  it("should return Some(unknown) when the item is found", async () => {
     await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
@@ -73,42 +55,19 @@ describe("findByKey", () => {
       ),
       TE.bimap(
         (err) => {
-          fail(
+          new Error(
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },
         O.fold(
-          () => fail("it should be some"),
+          () => {
+            throw new Error("it should be some");
+          },
           (result) =>
             expect(result).toMatchObject({
               id: COLLECTION_ID_KEY,
               key: COLLECTION_PARTITION_KEY,
             }),
-        ),
-      ),
-    )();
-  });
-
-  it("should return None when the item is not found - find only by id", async () => {
-    await pipe(
-      createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
-      TE.fromEither,
-      TE.chain((service) =>
-        service.findByKey(
-          COSMOSDB_NAME,
-          COSMOS_COLLECTION_NAME,
-          COLLECTION_ID_KEY,
-        ),
-      ),
-      TE.bimap(
-        (err) => {
-          fail(
-            `it should not fail while finding an existing document - ${err.message}`,
-          );
-        },
-        O.fold(
-          () => constVoid(),
-          () => fail("it should be none"),
         ),
       ),
     )();
@@ -128,13 +87,15 @@ describe("findByKey", () => {
       ),
       TE.bimap(
         (err) => {
-          fail(
+          new Error(
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },
         O.fold(
           () => constVoid(),
-          () => fail("it should be none"),
+          () => {
+            throw new Error("it should be none");
+          },
         ),
       ),
     )();
@@ -154,25 +115,28 @@ describe("findByLastVersionKey", () => {
           VERSION_FIELD_VALUE,
           COLLECTION_ID_VERSION,
           COLLECTION_PARTITION_KEY,
+          COLLECTION_PARTITION_KEY_VALUE,
         ),
       ),
       TE.bimap(
         (err) => {
-          fail(
+          new Error(
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },
-        (result) =>
-          expect(result).toMatchObject({
-            id: COLLECTION_ID,
-            key: COLLECTION_PARTITION_KEY,
-            VERSION_FIELD_NAME: VERSION_FIELD_VALUE,
-          }),
+        (result) => {
+          expect(result).toHaveLength(1);
+          expect(result[0]).toMatchObject({
+            id: COLLECTION_ID_VERSION,
+            key: COLLECTION_PARTITION_KEY_VALUE,
+            version: VERSION_FIELD_VALUE,
+          });
+        },
       ),
     )();
   });
 
-  it("should return an empty array when the item is not found", async () => {
+  it("should return an empty array when the item is not found with the specific version", async () => {
     await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
@@ -181,14 +145,15 @@ describe("findByLastVersionKey", () => {
           COSMOSDB_NAME,
           COSMOS_COLLECTION_NAME,
           VERSION_FIELD_NAME,
-          VERSION_FIELD_VALUE,
+          WRONG_VERSION_FIELD_VALUE,
           COLLECTION_ID_KEY,
           COLLECTION_PARTITION_KEY,
+          COLLECTION_PARTITION_KEY_VALUE,
         ),
       ),
       TE.bimap(
         (err) => {
-          fail(
+          new Error(
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },

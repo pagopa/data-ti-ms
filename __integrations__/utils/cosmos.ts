@@ -9,15 +9,17 @@ import * as E from "fp-ts/lib/Either";
 import * as TE from "fp-ts/lib/TaskEither";
 import { constVoid, pipe } from "fp-ts/lib/function";
 
-export const COSMOS_COLLECTION_NAME = "integration-collection";
+export const COSMOS_COLLECTION_NAME = "integrationcollection";
 export const COLLECTION_ID = Math.random().toString();
 export const COLLECTION_PARTITION_KEY = "key";
+export const COLLECTION_PARTITION_KEY_VALUE = "value";
+
 export const COLLECTION_ID_KEY = Math.random().toString();
 export const COLLECTION_ID_VERSION = Math.random().toString();
 
 export const VERSION_FIELD_NAME = "version";
 export const VERSION_FIELD_VALUE = "0";
-
+export const WRONG_VERSION_FIELD_VALUE = "0";
 /**
  * Create DB and collections
  */
@@ -72,9 +74,6 @@ export const createAllCollections = (
           COLLECTION_PARTITION_KEY
         ),
         TE.chainFirst(collection =>
-          upsertItem(collection, { id: COLLECTION_ID })
-        ),
-        TE.chainFirst(collection =>
           upsertItem(collection, {
             id: COLLECTION_ID_KEY,
             key: COLLECTION_PARTITION_KEY
@@ -83,7 +82,7 @@ export const createAllCollections = (
         TE.chainFirst(collection =>
           upsertItem(collection, {
             id: COLLECTION_ID_VERSION,
-            key: COLLECTION_PARTITION_KEY,
+            key: COLLECTION_PARTITION_KEY_VALUE,
             version: VERSION_FIELD_VALUE
           })
         )
