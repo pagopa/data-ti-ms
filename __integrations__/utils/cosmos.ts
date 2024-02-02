@@ -63,31 +63,30 @@ export const upsertItem = <T>(
   );
 export const createAllCollections = (
   database: Database
-): TE.TaskEither<Error, readonly Container[]> =>
+): TE.TaskEither<Error, void> =>
   pipe(
-    [
+    createCollection(
+      database,
+      COSMOS_COLLECTION_NAME,
+      COLLECTION_PARTITION_KEY
+    ),
+    TE.chain(collection =>
       pipe(
-        createCollection(
-          database,
-          COSMOS_COLLECTION_NAME,
-          COLLECTION_PARTITION_KEY
-        ),
-        TE.chainFirst(collection =>
+        [
           upsertItem(collection, {
             id: COLLECTION_ID_KEY,
             key: COLLECTION_PARTITION_KEY
-          })
-        ),
-        TE.chainFirst(collection =>
+          }),
           upsertItem(collection, {
             id: COLLECTION_ID_VERSION,
             key: COLLECTION_PARTITION_KEY_VALUE,
             version: VERSION_FIELD_VALUE
           })
-        )
+        ],
+        RA.sequence(TE.ApplicativePar),
+        TE.map(constVoid)
       )
-    ],
-    RA.sequence(TE.ApplicativePar)
+    )
   );
 
 export const createCollection = (
