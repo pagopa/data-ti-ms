@@ -37,9 +37,10 @@ export const createDatabase = (
   dbName: string
 ): TE.TaskEither<Error, Database> =>
   pipe(
-    TE.tryCatch(() => {
-      return client.databases.createIfNotExists({ id: dbName });
-    }, E.toError),
+    TE.tryCatch(
+      () => client.databases.createIfNotExists({ id: dbName }),
+      E.toError
+    ),
     TE.map(databaseResponse => databaseResponse.database)
   );
 
@@ -48,9 +49,7 @@ export const deleteDatabase = (
   dbName: string
 ): TE.TaskEither<Error, Database> =>
   pipe(
-    TE.tryCatch(() => {
-      return client.database(dbName).delete();
-    }, E.toError),
+    TE.tryCatch(() => client.database(dbName).delete(), E.toError),
     TE.map(databaseResponse => databaseResponse.database)
   );
 
@@ -115,16 +114,14 @@ export const deleteCollection = (
   containerName: string
 ): TE.TaskEither<Error, Container> =>
   pipe(
-    TE.tryCatch(() => {
-      return db.container(containerName).delete();
-    }, E.toError),
+    TE.tryCatch(() => db.container(containerName).delete(), E.toError),
     TE.map(containerResponse => containerResponse.container)
   );
 
 export const deleteAllCollections = (
   database: Database
-): TE.TaskEither<Error, readonly Container[]> => {
-  return pipe(
+): TE.TaskEither<Error, readonly Container[]> =>
+  pipe(
     database,
     TE.of,
     TE.bindTo("db"),
@@ -143,4 +140,3 @@ export const deleteAllCollections = (
       )
     )
   );
-};
