@@ -1,7 +1,7 @@
 import { CosmosClient } from "@azure/cosmos";
 import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/lib/TaskEither";
-import { constVoid, pipe } from "fp-ts/lib/function";
+import { pipe } from "fp-ts/lib/function";
 import { createCosmosQueryEnrichmentService } from "../../../../src/enrichment/query/cosmos/service";
 import { COSMOSDB_CONNECTION_STRING, COSMOSDB_NAME } from "../../../env";
 import {
@@ -91,12 +91,7 @@ describe("findByKey", () => {
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },
-        O.fold(
-          () => constVoid(),
-          () => {
-            throw new Error("it should be none");
-          },
-        ),
+        (result) => expect(O.isNone(result)).toBeTruthy(),
       ),
     )();
   });
@@ -161,12 +156,7 @@ describe("findByLastVersionKey", () => {
             `it should not fail while finding an existing document - ${err.message}`,
           );
         },
-        O.fold(
-          () => constVoid(),
-          () => {
-            throw new Error("it should be none");
-          },
-        ),
+        (result) => expect(O.isNone(result)).toBeTruthy(),
       ),
     )();
   });
