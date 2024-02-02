@@ -7,6 +7,7 @@ describe("DataOutput", () => {
       connectionString: "connectionString",
       indexName: "indexName",
       type: "DATA_OUTPUT",
+      indexer: "ELASTICSEARCH",
       deduplicationStrategy: "TIMESTAMP"
     };
     const result = DataOutput.decode(validData);
@@ -16,6 +17,7 @@ describe("DataOutput", () => {
     const invalidData = {
       connectionString: 123,
       indexName: "indexName",
+      indexer: "ELASTICSEARCH",
       type: "DATA_OUTPUT"
     };
     const result = DataOutput.decode(invalidData);
@@ -25,6 +27,7 @@ describe("DataOutput", () => {
     const invalidData = {
       connectionString: "",
       indexName: "indexName",
+      indexer: "ELASTICSEARCH",
       type: "DATA_OUTPUT"
     };
     const result = DataOutput.decode(invalidData);
@@ -34,6 +37,7 @@ describe("DataOutput", () => {
     const invalidData = {
       connectionString: "connectionString",
       indexName: 123,
+      indexer: "ELASTICSEARCH",
       type: "DATA_OUTPUT"
     };
     const result = DataOutput.decode(invalidData);
@@ -43,6 +47,7 @@ describe("DataOutput", () => {
     const invalidData = {
       connectionString: "connectionString",
       indexName: "",
+      indexer: "ELASTICSEARCH",
       type: "DATA_OUTPUT"
     };
     const result = DataOutput.decode(invalidData);
@@ -52,6 +57,7 @@ describe("DataOutput", () => {
     const invalidData = {
       connectionString: "connectionString",
       indexName: "indexName",
+      indexer: "ELASTICSEARCH",
       type: "INVALID_TYPE"
     };
     const result = DataOutput.decode(invalidData);
@@ -62,7 +68,19 @@ describe("DataOutput", () => {
       connectionString: "connectionString",
       indexName: "indexName",
       type: "DATA_OUTPUT",
+      indexer: "ELASTICSEARCH",
       deduplicationStrategy: "INVALID"
+    };
+    const result = DataOutput.decode(invalidData);
+    expect(E.isRight(result)).toBeFalsy();
+  });
+  it("should not validate if indexer is not 'ELASTICSEARCH'", () => {
+    const invalidData = {
+      connectionString: "connectionString",
+      indexName: "indexName",
+      type: "DATA_OUTPUT",
+      indexer: "INVALID",
+      deduplicationStrategy: "TIMESTAMP"
     };
     const result = DataOutput.decode(invalidData);
     expect(E.isRight(result)).toBeFalsy();

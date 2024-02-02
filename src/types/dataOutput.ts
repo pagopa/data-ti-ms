@@ -8,6 +8,7 @@ const DeduplicationStrategy = t.partial({
 const DataOutputConfig = t.type({
   connectionString: NonEmptyString,
   indexName: NonEmptyString,
+  indexer: t.literal("ELASTICSEARCH"),
   type: t.literal("DATA_OUTPUT")
 });
 
