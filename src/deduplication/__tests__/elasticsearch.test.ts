@@ -171,7 +171,7 @@ describe("getDocument", () => {
       id: document.id
     });
     await pipe(
-      getDocument(mockElasticClient)(document, indexName),
+      getDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         () => {
           new Error(`it should not fail while creating index`);
@@ -187,7 +187,7 @@ describe("getDocument", () => {
   it("getDocument should return an error", async () => {
     mockGet.mockResolvedValueOnce(new Error("Error retrieving document"));
     await pipe(
-      getDocument(mockElasticClient)(document, indexName),
+      getDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         err => expect(err).toEqual(new Error("Error retrieving document")),
         () => {

@@ -46,8 +46,8 @@ export const createIndexIfNotExists = (
   );
 
 export const getDocument = (elasticClient: EL.Client) => (
-  document: IOutputDocument,
-  indexName: string
+  indexName: string,
+  document: IOutputDocument
 ): TE.TaskEither<Error, GetResponse> =>
   pipe(
     TE.Do,
