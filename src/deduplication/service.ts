@@ -1,12 +1,16 @@
 import * as EL from "@elastic/elasticsearch";
 import { GetResponse } from "@elastic/elasticsearch/lib/api/types";
+import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
+import { pipe } from "fp-ts/lib/function";
 import {
   IOutputDocument,
   getDocument,
+  getElasticClient,
   indexDocument,
   updateIndexDocument
 } from "./elasticsearch";
+
 export type OutputClient = EL.Client;
 export type OutputDataRead = GetResponse;
 export type OutputDataWrite = EL.estypes.Result;
@@ -26,9 +30,13 @@ export interface IOutputDeduplicationService {
 }
 
 export const getElasticSearchService = (
-  client: EL.Client
-): IOutputDeduplicationService => ({
-  get: getDocument(client),
-  insert: indexDocument(client),
-  update: updateIndexDocument(client)
-});
+  connectionString: string
+): E.Either<Error, IOutputDeduplicationService> =>
+  pipe(
+    getElasticClient(connectionString),
+    E.map(client => ({
+      get: getDocument(client),
+      insert: indexDocument(client),
+      update: updateIndexDocument(client)
+    }))
+  );

@@ -49,6 +49,7 @@ describe("getElasticClient", () => {
     (EL.Client as jest.Mock).mockImplementationOnce(() => mockElasticClient);
     await pipe(
       getElasticClient(elasticNode),
+      TE.fromEither,
       TE.bimap(
         () => {
           new Error(`it should not fail while finding an existing document`);
@@ -64,6 +65,7 @@ describe("getElasticClient", () => {
     );
     await pipe(
       getElasticClient(elasticNode),
+      TE.fromEither,
       TE.bimap(
         err => expect(err).toEqual(new Error("Connection error")),
         () => {

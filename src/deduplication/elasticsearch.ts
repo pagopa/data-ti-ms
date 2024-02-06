@@ -13,8 +13,8 @@ export interface IOutputDocument {
 
 export const getElasticClient = (
   elasticNode: string
-): TE.TaskEither<Error, EL.Client> =>
-  TE.of(new EL.Client({ node: elasticNode }));
+): E.Either<Error, EL.Client> =>
+  E.tryCatch(() => new EL.Client({ node: elasticNode }), E.toError);
 
 export const createIndex = (
   elasticClient: EL.Client,
