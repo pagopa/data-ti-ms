@@ -23,11 +23,11 @@ export interface IOutputDeduplicationService {
   readonly insert: (
     indexName: string,
     document: IOutputDocument
-  ) => TE.TaskEither<Error, OutputDataWrite>;
+  ) => TE.TaskEither<Error, void>;
   readonly update: (
     indexName: string,
     document: IOutputDocument
-  ) => TE.TaskEither<Error, OutputDataWrite>;
+  ) => TE.TaskEither<Error, void>;
 }
 
 export const getElasticSearchService = (
