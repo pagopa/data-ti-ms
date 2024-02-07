@@ -12,7 +12,7 @@ import {
 } from "./elasticsearch";
 
 export type OutputClient = EL.Client;
-export type OutputDataRead = GetResponse;
+export type OutputDataRead = GetResponse<IOutputDocument>;
 export type OutputDataWrite = EL.estypes.Result;
 
 export interface IOutputDeduplicationService {

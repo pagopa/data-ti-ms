@@ -53,8 +53,24 @@ jobs:
           echo "COSMOSDB_NAME=${{github.run_id}}" >> $GITHUB_ENV
           echo "COSMOSDB_CONNECTION_STRING=${{secrets.COSMOSDB_CONNECTION_STRING}}" >> $GITHUB_ENV
 
+      - name: Stop containers if up 
+        run: |
+          docker-compose -f "__integrations__/docker-compose.yml" stop
+          docker-compose -f "__integrations__/docker-compose.yml" down
+      
+      - name: Start containers
+        run: docker-compose --env-path "__integrations__/environments/.env" -f "__integrations__/docker-compose.yml" up -d
+
+      - name: Sleep
+        run: sleep 30s
+
       - name: System tests
         run: |
           cd __integrations__
           yarn install --immutable
           yarn test
+      
+      - name: Stop containers
+        run: |
+          docker-compose -f "docker-compose.yml" stop
+          docker-compose -f "docker-compose.yml" down

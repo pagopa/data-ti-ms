@@ -49,18 +49,20 @@ export const createIndexIfNotExists = (
 export const getDocument = (elasticClient: EL.Client) => (
   indexName: string,
   document: IOutputDocument
-): TE.TaskEither<EL.errors.ResponseError, GetResponse> =>
+): TE.TaskEither<EL.errors.ResponseError, GetResponse<IOutputDocument>> =>
   pipe(
     TE.Do,
     defaultLog.taskEither.info(`getAndIndexDocument => ${document}`),
     () =>
       TE.tryCatch(
-        () => elasticClient.get({ id: document.id, index: indexName }),
+        () =>
+          elasticClient.get<IOutputDocument>({
+            id: document.id,
+            index: indexName
+          }),
         e => e as EL.errors.ResponseError
       ),
-    defaultLog.taskEither.infoLeft(
-      e => `Error getting document from index => ${String(e)}`
-    )
+    defaultLog.taskEither.infoLeft(_ => `Error getting document from index`)
   );
 
 export const indexDocument = (elasticClient: EL.Client) => (

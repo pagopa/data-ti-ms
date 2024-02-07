@@ -18,7 +18,7 @@ export const timestampDeduplication = (
       resErr => resErr,
       docRead =>
         pipe(
-          document._timestamp > docRead.fields._timestamp,
+          document._timestamp > docRead._source._timestamp,
           B.fold(
             () => constVoid(),
             () =>
