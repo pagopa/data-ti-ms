@@ -55,8 +55,8 @@ jobs:
 
       - name: Stop containers if up 
         run: |
-          docker-compose -f "__integrations__/docker-compose.yml" stop
-          docker-compose -f "__integrations__/docker-compose.yml" down
+          docker-compose --env-file "__integrations__/environments/.env" -f "__integrations__/docker-compose.yml" stop
+          docker-compose --env-file "__integrations__/environments/.env" -f "__integrations__/docker-compose.yml" down
       
       - name: Start containers
         run: docker-compose --env-file "__integrations__/environments/.env" -f "__integrations__/docker-compose.yml" up -d
@@ -72,5 +72,5 @@ jobs:
       
       - name: Stop containers
         run: |
-          docker-compose -f "docker-compose.yml" stop
-          docker-compose -f "docker-compose.yml" down
+          docker-compose --env-file "environments/.env" -f "docker-compose.yml" stop
+          docker-compose --env-file "environments/.env" -f "docker-compose.yml" down
