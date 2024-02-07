@@ -214,7 +214,23 @@ describe("indexDocument", () => {
         () => {
           new Error(`it should not fail while creating index`);
         },
-        doc => expect(doc).toEqual("created")
+        doc => expect(doc).toEqual(void 0)
+      )
+    )();
+  });
+
+  it("indexDocument should return a status different from created and updated", async () => {
+    mockIndex.mockResolvedValueOnce({ result: "noop" });
+    await pipe(
+      indexDocument(mockElasticClient)(indexName, document),
+      TE.bimap(
+        err =>
+          expect(err).toEqual(
+            new Error("Error indexing document - Status not created - noop")
+          ),
+        () => {
+          new Error(`it should fail while indexing a document`);
+        }
       )
     )();
   });
@@ -244,9 +260,25 @@ describe("updateIndexDocument", () => {
       updateIndexDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         () => {
-          new Error(`it should not fail while creating index`);
+          new Error(`it should not fail while updating index`);
         },
-        doc => expect(doc).toEqual("created")
+        doc => expect(doc).toEqual(void 0)
+      )
+    )();
+  });
+
+  it("updateIndexDocument should return a status different from created and updated", async () => {
+    mockUpdate.mockResolvedValueOnce({ result: "noop" });
+    await pipe(
+      updateIndexDocument(mockElasticClient)(indexName, document),
+      TE.bimap(
+        err =>
+          expect(err).toEqual(
+            new Error("Error indexing document - Status not created - noop")
+          ),
+        () => {
+          new Error(`it should fail while updating a document`);
+        }
       )
     )();
   });
@@ -258,7 +290,7 @@ describe("updateIndexDocument", () => {
       TE.bimap(
         err => expect(err).toEqual(new Error("Error indexing document")),
         () => {
-          new Error(`it should fail while indexing a document`);
+          new Error(`it should fail while updating a document`);
         }
       )
     )();
