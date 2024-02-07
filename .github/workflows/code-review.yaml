@@ -52,11 +52,6 @@ jobs:
           echo "NODE_TLS_REJECT_UNAUTHORIZED=0" >> $GITHUB_ENV
           echo "COSMOSDB_NAME=${{github.run_id}}" >> $GITHUB_ENV
           echo "COSMOSDB_CONNECTION_STRING=${{secrets.COSMOSDB_CONNECTION_STRING}}" >> $GITHUB_ENV
-
-      - name: Stop containers if up 
-        run: |
-          docker-compose --env-file "__integrations__/environments/.env" -f "__integrations__/docker-compose.yml" stop
-          docker-compose --env-file "__integrations__/environments/.env" -f "__integrations__/docker-compose.yml" down
       
       - name: Start containers
         run: docker-compose --env-file "__integrations__/environments/.env" -f "__integrations__/docker-compose.yml" up -d
