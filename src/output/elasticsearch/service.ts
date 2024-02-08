@@ -4,8 +4,8 @@ import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import {
-  IElasticError,
   IOutputDocument,
+  IOutputError,
   getDocument,
   getElasticClient,
   indexDocument,
@@ -19,7 +19,7 @@ export interface IOutputDeduplicationService {
   readonly get: (
     indexName: string,
     document: IOutputDocument
-  ) => TE.TaskEither<IElasticError, OutputDataRead>;
+  ) => TE.TaskEither<IOutputError, OutputDataRead>;
   readonly insert: (
     indexName: string,
     document: IOutputDocument
