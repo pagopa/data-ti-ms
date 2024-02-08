@@ -98,6 +98,8 @@ describe("timestampDeduplication", () => {
     mockGet.mockImplementationOnce(() =>
       TE.right(({ _source: { _timestamp: 1 } } as unknown) as GetResponse)
     );
+    mockUpdate.mockImplementationOnce(() => TE.right(constVoid));
+
     await pipe(
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
