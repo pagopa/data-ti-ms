@@ -52,7 +52,9 @@ describe("getElasticClient", () => {
       TE.fromEither,
       TE.bimap(
         () => {
-          new Error(`it should not fail while finding an existing document`);
+          throw new Error(
+            `it should not fail while finding an existing document`
+          );
         },
         client => expect(client).toEqual(mockElasticClient)
       )
@@ -60,16 +62,16 @@ describe("getElasticClient", () => {
   });
 
   it("getElasticClient should return an error", async () => {
-    (EL.Client as jest.Mock).mockImplementationOnce(
-      () => new Error("Connection error")
-    );
+    (EL.Client as jest.Mock).mockImplementationOnce(() => {
+      throw new Error("Connection error");
+    });
     await pipe(
       getElasticClient(elasticNode),
       TE.fromEither,
       TE.bimap(
         err => expect(err).toEqual(new Error("Connection error")),
         () => {
-          new Error(`it should fail while finding an existing document`);
+          throw new Error(`it should fail while finding an existing document`);
         }
       )
     )();
@@ -90,7 +92,7 @@ describe("createIndex", () => {
       createIndex(mockElasticClient, indexName),
       TE.bimap(
         () => {
-          new Error(`it should not fail while creating index`);
+          throw new Error(`it should not fail while creating index`);
         },
         ack => expect(ack).toEqual(true)
       )
@@ -98,13 +100,13 @@ describe("createIndex", () => {
   });
 
   it("createIndex should return an error", async () => {
-    mockCreate.mockResolvedValueOnce(new Error("Connection error"));
+    mockCreate.mockRejectedValueOnce(new Error("Connection error"));
     await pipe(
       createIndex(mockElasticClient, indexName),
       TE.bimap(
         err => expect(err).toEqual(new Error("Connection error")),
         () => {
-          new Error(`it should fail while finding an existing document`);
+          throw new Error(`it should fail while finding an existing document`);
         }
       )
     )();
@@ -126,7 +128,7 @@ describe("createIndexIfNotExists", () => {
       createIndexIfNotExists(mockElasticClient, indexName),
       TE.bimap(
         () => {
-          new Error(`it should not fail while creating index`);
+          throw new Error(`it should not fail while creating index`);
         },
         ack => expect(ack).toEqual(true)
       )
@@ -139,7 +141,7 @@ describe("createIndexIfNotExists", () => {
       createIndexIfNotExists(mockElasticClient, indexName),
       TE.bimap(
         () => {
-          new Error(`it should not fail while creating index`);
+          throw new Error(`it should not fail while creating index`);
         },
         ack => expect(ack).toEqual(true)
       )
@@ -149,13 +151,13 @@ describe("createIndexIfNotExists", () => {
 
   it("createIndex should return an error when creating", async () => {
     mockExists.mockResolvedValueOnce(false);
-    mockCreate.mockResolvedValueOnce(new Error("Connection error"));
+    mockCreate.mockRejectedValueOnce(new Error("Connection error"));
     await pipe(
       createIndexIfNotExists(mockElasticClient, indexName),
       TE.bimap(
         err => expect(err).toEqual(new Error("Connection error")),
         () => {
-          new Error(`it should fail while finding an existing document`);
+          throw new Error(`it should fail while finding an existing document`);
         }
       )
     )();
@@ -176,7 +178,7 @@ describe("getDocument", () => {
       getDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         () => {
-          new Error(`it should not fail while creating index`);
+          throw new Error(`it should not fail while creating index`);
         },
         doc =>
           expect(doc).toEqual({
@@ -187,13 +189,20 @@ describe("getDocument", () => {
   });
 
   it("getDocument should return an error", async () => {
-    mockGet.mockResolvedValueOnce(new Error("Error retrieving document"));
+    mockGet.mockRejectedValueOnce({
+      statusCode: 404,
+      message: "Error retrieving document"
+    });
     await pipe(
       getDocument(mockElasticClient)(indexName, document),
       TE.bimap(
-        err => expect(err).toEqual(new Error("Error retrieving document")),
+        err =>
+          expect(err).toEqual({
+            statusCode: 404,
+            description: "Error retrieving document"
+          }),
         () => {
-          new Error(`it should fail while finding an existing document`);
+          throw new Error(`it should fail while finding an existing document`);
         }
       )
     )();
@@ -212,7 +221,7 @@ describe("indexDocument", () => {
       indexDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         () => {
-          new Error(`it should not fail while creating index`);
+          throw new Error(`it should not fail while creating index`);
         },
         doc => expect(doc).toEqual(void 0)
       )
@@ -229,20 +238,20 @@ describe("indexDocument", () => {
             new Error("Error indexing document - Status not created - noop")
           ),
         () => {
-          new Error(`it should fail while indexing a document`);
+          throw new Error(`it should fail while indexing a document`);
         }
       )
     )();
   });
 
   it("indexDocument should return an error", async () => {
-    mockIndex.mockResolvedValueOnce(new Error("Error indexing document"));
+    mockIndex.mockRejectedValueOnce(new Error("Error indexing document"));
     await pipe(
       indexDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         err => expect(err).toEqual(new Error("Error indexing document")),
         () => {
-          new Error(`it should fail while indexing a document`);
+          throw new Error(`it should fail while indexing a document`);
         }
       )
     )();
@@ -260,7 +269,7 @@ describe("updateIndexDocument", () => {
       updateIndexDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         () => {
-          new Error(`it should not fail while updating index`);
+          throw new Error(`it should not fail while updating index`);
         },
         doc => expect(doc).toEqual(void 0)
       )
@@ -277,20 +286,20 @@ describe("updateIndexDocument", () => {
             new Error("Error indexing document - Status not created - noop")
           ),
         () => {
-          new Error(`it should fail while updating a document`);
+          throw new Error(`it should fail while updating a document`);
         }
       )
     )();
   });
 
   it("updateIndexDocument should return an error", async () => {
-    mockUpdate.mockResolvedValueOnce(new Error("Error indexing document"));
+    mockUpdate.mockRejectedValueOnce(new Error("Error indexing document"));
     await pipe(
       updateIndexDocument(mockElasticClient)(indexName, document),
       TE.bimap(
         err => expect(err).toEqual(new Error("Error indexing document")),
         () => {
-          new Error(`it should fail while updating a document`);
+          throw new Error(`it should fail while updating a document`);
         }
       )
     )();
