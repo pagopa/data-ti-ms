@@ -15,7 +15,7 @@ const mockService: IOutputDeduplicationService = {
   insert: mockInsert,
   update: mockUpdate
 };
-const elasticNode = "http://localhost:9200";
+
 const indexName = "test_index";
 const document: IOutputDocument = {
   id: "123",
@@ -39,7 +39,7 @@ describe("timestampDeduplication", () => {
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -60,7 +60,7 @@ describe("timestampDeduplication", () => {
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -81,7 +81,7 @@ describe("timestampDeduplication", () => {
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -102,7 +102,7 @@ describe("timestampDeduplication", () => {
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -130,10 +130,11 @@ describe("timestampDeduplication", () => {
           expect(mockInsert).not.toHaveBeenCalled();
           expect(err).toEqual(new Error("Error during update"));
         },
-        _ =>
-          new Error(
+        _ => {
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
-          )
+          );
+        }
       )
     )();
   });
