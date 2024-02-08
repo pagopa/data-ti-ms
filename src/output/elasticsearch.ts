@@ -12,6 +12,16 @@ export interface IOutputDocument {
   readonly id: string;
 }
 
+export interface IElasticError {
+  readonly statusCode: number;
+  readonly description: string;
+}
+
+export const toIndexError = (err: EL.errors.ResponseError): IElasticError => ({
+  description: err.message,
+  statusCode: err.statusCode
+});
+
 export const getElasticClient = (
   elasticNode: string
 ): E.Either<Error, EL.Client> =>
@@ -49,17 +59,21 @@ export const createIndexIfNotExists = (
 export const getDocument = (elasticClient: EL.Client) => (
   indexName: string,
   document: IOutputDocument
-): TE.TaskEither<EL.errors.ResponseError, GetResponse> =>
+): TE.TaskEither<IElasticError, GetResponse<IOutputDocument>> =>
   pipe(
     TE.Do,
     defaultLog.taskEither.info(`getAndIndexDocument => ${document}`),
     () =>
       TE.tryCatch(
-        () => elasticClient.get({ id: document.id, index: indexName }),
-        e => e as EL.errors.ResponseError
+        () =>
+          elasticClient.get<IOutputDocument>({
+            id: document.id,
+            index: indexName
+          }),
+        e => toIndexError(e as EL.errors.ResponseError)
       ),
     defaultLog.taskEither.infoLeft(
-      e => `Error getting document from index => ${String(e)}`
+      e => `Error getting document from index => ${e.description}`
     )
   );
 
@@ -77,21 +91,17 @@ export const indexDocument = (elasticClient: EL.Client) => (
         }),
       E.toError
     ),
-    TE.bimap(E.toError, response =>
-      pipe(
-        response.result !== "created" && response.result !== "updated",
-        B.fold(
-          () => constVoid(),
-          () =>
-            TE.left(
-              new Error(
-                "Error indexing document - Status not created - " +
-                  response.result
-              )
-            )
-        )
+    TE.chain(
+      TE.fromPredicate(
+        response =>
+          response.result === "created" || response.result === "updated",
+        res =>
+          new Error(
+            `Error indexing document - Status not created - ${res.result}`
+          )
       )
-    )
+    ),
+    TE.map(constVoid)
   );
 
 export const updateIndexDocument = (elasticClient: EL.Client) => (
@@ -108,19 +118,15 @@ export const updateIndexDocument = (elasticClient: EL.Client) => (
         }),
       E.toError
     ),
-    TE.bimap(E.toError, response =>
-      pipe(
-        response.result !== "created" && response.result !== "updated",
-        B.fold(
-          () => constVoid(),
-          () =>
-            TE.left(
-              new Error(
-                "Error indexing document - Status not created - " +
-                  response.result
-              )
-            )
-        )
+    TE.chain(
+      TE.fromPredicate(
+        response =>
+          response.result === "created" || response.result === "updated",
+        res =>
+          new Error(
+            `Error indexing document - Status not created - ${res.result}`
+          )
       )
-    )
+    ),
+    TE.map(constVoid)
   );
