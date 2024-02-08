@@ -24,13 +24,13 @@ const document: IOutputDocument = {
   _timestamp: 10
 };
 
-describe("timestampDeduplication", () => {
+describe("indexerDeduplication", () => {
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
   });
 
-  it("timestampDeduplication should insert while retrieving a document (404 error)", async () => {
+  it("indexerDeduplication should insert while retrieving a document (404 error)", async () => {
     mockGet.mockImplementationOnce(() =>
       TE.left({ statusCode: 404 } as EL.errors.ResponseError)
     );
@@ -52,7 +52,7 @@ describe("timestampDeduplication", () => {
     )();
   });
 
-  it("timestampDeduplication should do nothing while retrieving a document (500 error)", async () => {
+  it("indexerDeduplication should do nothing while retrieving a document (500 error)", async () => {
     mockGet.mockImplementationOnce(() =>
       TE.left({ statusCode: 500 } as EL.errors.ResponseError)
     );
@@ -73,7 +73,7 @@ describe("timestampDeduplication", () => {
     )();
   });
 
-  it("timestampDeduplication should do nothing while retrieving a document with a greater timestamp", async () => {
+  it("indexerDeduplication should do nothing while retrieving a document with a greater timestamp", async () => {
     mockGet.mockImplementationOnce(() =>
       TE.right(({ _source: { _timestamp: 123 } } as unknown) as GetResponse)
     );
@@ -94,7 +94,7 @@ describe("timestampDeduplication", () => {
     )();
   });
 
-  it("timestampDeduplication should update index while retrieving a document with a lower timestamp", async () => {
+  it("indexerDeduplication should update index while retrieving a document with a lower timestamp", async () => {
     mockGet.mockImplementationOnce(() =>
       TE.right(({ _source: { _timestamp: 1 } } as unknown) as GetResponse<
         IOutputDocument
@@ -118,7 +118,7 @@ describe("timestampDeduplication", () => {
     )();
   });
 
-  it("timestampDeduplication should return an error when an error occurs", async () => {
+  it("indexerDeduplication should return an error when an error occurs", async () => {
     mockGet.mockImplementationOnce(() =>
       TE.right(({ _source: { _timestamp: 1 } } as unknown) as GetResponse)
     );

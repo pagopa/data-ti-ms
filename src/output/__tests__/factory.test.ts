@@ -2,18 +2,18 @@ import {
   DeduplicationStrategyType,
   getDeduplicationStrategy
 } from "../factory";
-import { timestampDeduplicationStrategy } from "../service";
+import { indexerDeduplicationStrategy } from "../service";
 
 describe("getDeduplicationStrategy", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should return timestamp deduplication strategy", () => {
-    const strategyType = DeduplicationStrategyType.Timestamp;
+  it("should return indexer deduplication strategy", () => {
+    const strategyType = DeduplicationStrategyType.Indexer;
     const strategy = getDeduplicationStrategy(strategyType);
 
-    expect(strategy).toEqual(timestampDeduplicationStrategy);
+    expect(strategy).toEqual(indexerDeduplicationStrategy);
   });
 
   it("should throw an error for unsupported strategy", () => {
