@@ -20,7 +20,7 @@ export interface IOutputDocument {
   readonly id: string;
 }
 
-export interface IElasticError {
+export interface IOutputError {
   readonly statusCode: number;
   readonly description: string;
 }
@@ -28,7 +28,7 @@ export interface IElasticError {
 const isResponseError = (err: unknown): err is ElasticResponseError =>
   ElasticResponseError.is(err);
 
-export const toIndexError = (err: unknown): IElasticError =>
+export const toIndexError = (err: unknown): IOutputError =>
   pipe(
     err,
     E.fromPredicate(isResponseError, () => ({
@@ -79,7 +79,7 @@ export const createIndexIfNotExists = (
 export const getDocument = (elasticClient: EL.Client) => (
   indexName: string,
   document: IOutputDocument
-): TE.TaskEither<IElasticError, GetResponse<IOutputDocument>> =>
+): TE.TaskEither<IOutputError, GetResponse<IOutputDocument>> =>
   pipe(
     TE.Do,
     defaultLog.taskEither.info(`getAndIndexDocument => ${document}`),
