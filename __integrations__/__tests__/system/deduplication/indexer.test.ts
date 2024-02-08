@@ -66,7 +66,7 @@ describe("deduplication", () => {
       E.bind("service", () => getElasticSearchService(ELASTIC_NODE)),
       E.bind("strategy", () =>
         E.tryCatch(
-          () => getDeduplicationStrategy(DeduplicationStrategyType.Timestamp),
+          () => getDeduplicationStrategy(DeduplicationStrategyType.Indexer),
           E.toError,
         ),
       ),
@@ -97,7 +97,7 @@ describe("deduplication", () => {
       E.bind("service", () => getElasticSearchService(ELASTIC_NODE)),
       E.bind("strategy", () =>
         E.tryCatch(
-          () => getDeduplicationStrategy(DeduplicationStrategyType.Timestamp),
+          () => getDeduplicationStrategy(DeduplicationStrategyType.Indexer),
           E.toError,
         ),
       ),
@@ -128,7 +128,7 @@ describe("deduplication", () => {
       E.bind("service", () => getElasticSearchService(ELASTIC_NODE)),
       E.bind("strategy", () =>
         E.tryCatch(
-          () => getDeduplicationStrategy(DeduplicationStrategyType.Timestamp),
+          () => getDeduplicationStrategy(DeduplicationStrategyType.Indexer),
           E.toError,
         ),
       ),
