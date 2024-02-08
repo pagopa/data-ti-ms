@@ -5,12 +5,12 @@ import { pipe } from "fp-ts/lib/function";
 import {
   createIndexIfNotExists,
   getElasticClient,
-} from "../../../../src/deduplication/elasticsearch/elasticsearch";
-import { getElasticSearchService } from "../../../../src/deduplication/elasticsearch/service";
+} from "../../../../src/output/elasticsearch/elasticsearch";
+import { getElasticSearchService } from "../../../../src/output/elasticsearch/service";
 import {
   DeduplicationStrategyType,
   getDeduplicationStrategy,
-} from "../../../../src/deduplication/factory";
+} from "../../../../src/output/factory";
 import { ELASTIC_NODE } from "../../../env";
 import { deleteData, deleteIndex } from "../../../utils/elasticsearch";
 
@@ -81,7 +81,7 @@ describe("deduplication", () => {
           ),
         ({ service }) =>
           pipe(
-            service.get(INDEX_NAME, { id: FIRST_ID }),
+            service.get(INDEX_NAME, olderDocument),
             defaultLog.taskEither.info((doc) => `Doc retrieved ${doc._source}`),
             TE.bimap(E.toError, (doc) =>
               expect(doc._source).toEqual(olderDocument),
@@ -112,7 +112,7 @@ describe("deduplication", () => {
           ),
         ({ service }) =>
           pipe(
-            service.get(INDEX_NAME, { id: FIRST_ID }),
+            service.get(INDEX_NAME, newerDocument),
             defaultLog.taskEither.info((doc) => `Doc retrieved ${doc._source}`),
             TE.bimap(E.toError, (doc) =>
               expect(doc._source).toEqual(newerDocument),
@@ -143,7 +143,7 @@ describe("deduplication", () => {
           ),
         ({ service }) =>
           pipe(
-            service.get(INDEX_NAME, { id: FIRST_ID }),
+            service.get(INDEX_NAME, olderDocument),
             defaultLog.taskEither.info((doc) => `Doc retrieved ${doc._source}`),
             TE.bimap(E.toError, (doc) =>
               expect(doc._source).toEqual(newerDocument),
