@@ -6,21 +6,42 @@ import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
 import * as B from "fp-ts/boolean";
 import { constVoid, pipe } from "fp-ts/lib/function";
+import * as T from "io-ts";
+
+const ElasticResponseError = T.type({
+  message: T.string,
+  statusCode: T.number
+});
+
+type ElasticResponseError = T.TypeOf<typeof ElasticResponseError>;
 
 export interface IOutputDocument {
   readonly [key: string]: unknown;
+  readonly _timestamp: number;
   readonly id: string;
 }
 
-export interface IElasticError {
+export interface IOutputError {
   readonly statusCode: number;
   readonly description: string;
 }
 
-export const toIndexError = (err: EL.errors.ResponseError): IElasticError => ({
-  description: err.message,
-  statusCode: err.statusCode
-});
+const isResponseError = (err: unknown): err is ElasticResponseError =>
+  ElasticResponseError.is(err);
+
+export const toIndexError = (err: unknown): IOutputError =>
+  pipe(
+    err,
+    E.fromPredicate(isResponseError, () => ({
+      description: String(err),
+      statusCode: 500
+    })),
+    E.map(responseError => ({
+      description: responseError.message,
+      statusCode: responseError.statusCode
+    })),
+    E.toUnion
+  );
 
 export const getElasticClient = (
   elasticNode: string
@@ -59,7 +80,7 @@ export const createIndexIfNotExists = (
 export const getDocument = (elasticClient: EL.Client) => (
   indexName: string,
   document: IOutputDocument
-): TE.TaskEither<IElasticError, GetResponse<IOutputDocument>> =>
+): TE.TaskEither<IOutputError, GetResponse<IOutputDocument>> =>
   pipe(
     TE.Do,
     defaultLog.taskEither.info(`getAndIndexDocument => ${document}`),
@@ -70,7 +91,7 @@ export const getDocument = (elasticClient: EL.Client) => (
             id: document.id,
             index: indexName
           }),
-        e => toIndexError(e as EL.errors.ResponseError)
+        e => toIndexError(e)
       ),
     defaultLog.taskEither.infoLeft(
       e => `Error getting document from index => ${e.description}`
