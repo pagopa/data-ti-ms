@@ -6,7 +6,7 @@ import * as B from "fp-ts/boolean";
 import { flow, pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "./elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "./elasticsearch/service";
-export const timestampDeduplication = (
+export const indexerDeduplication = (
   indexName: string,
   document: IOutputDocument
 ) => (service: IOutputDeduplicationService): TE.TaskEither<Error, void> =>

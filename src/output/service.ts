@@ -1,7 +1,7 @@
 import * as TE from "fp-ts/TaskEither";
 import { IOutputDocument } from "./elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "./elasticsearch/service";
-import { timestampDeduplication } from "./timestamp-deduplication";
+import { indexerDeduplication } from "./indexer-deduplication";
 
 export interface IDeduplicationStrategy {
   readonly execute: (
@@ -11,5 +11,5 @@ export interface IDeduplicationStrategy {
 }
 
 export const timestampDeduplicationStrategy: IDeduplicationStrategy = {
-  execute: timestampDeduplication
+  execute: indexerDeduplication
 };
