@@ -10,6 +10,6 @@ export interface IDeduplicationStrategy {
   ) => (service: IOutputDeduplicationService) => TE.TaskEither<Error, void>;
 }
 
-export const timestampDeduplicationStrategy: IDeduplicationStrategy = {
+export const indexerDeduplicationStrategy: IDeduplicationStrategy = {
   execute: indexerDeduplication
 };
