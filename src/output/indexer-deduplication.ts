@@ -6,6 +6,7 @@ import * as B from "fp-ts/boolean";
 import { flow, pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "./elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "./elasticsearch/service";
+
 export const indexerDeduplication = (
   indexName: string,
   document: IOutputDocument
@@ -23,14 +24,22 @@ export const indexerDeduplication = (
               TE.map(() => O.none)
             ),
           () => TE.right(O.none)
-        )
+        ),
+        TE.mapLeft(() => new Error())
       )
     ),
     TE.chain(
       flow(
         O.chain(
-          O.fromPredicate(
-            docRead => document._timestamp > docRead._source._timestamp
+          O.fromPredicate(docRead =>
+            pipe(
+              docRead._source,
+              O.fromNullable,
+              O.fold(
+                () => false,
+                doc => document._timestamp > doc._timestamp
+              )
+            )
           )
         ),
         O.map(() =>

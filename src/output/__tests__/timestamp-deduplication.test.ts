@@ -4,7 +4,7 @@ import * as TE from "fp-ts/TaskEither";
 import { constVoid, pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "../elasticsearch/service";
-import { timestampDeduplication } from "../timestamp-deduplication";
+import { indexerDeduplication } from "../indexer-deduplication";
 
 const mockGet = jest.fn();
 const mockInsert = jest.fn();
@@ -36,7 +36,7 @@ describe("timestampDeduplication", () => {
     );
     mockInsert.mockImplementationOnce(() => TE.right(constVoid));
     await pipe(
-      timestampDeduplication(indexName, document)(mockService),
+      indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
           throw new Error(
@@ -57,7 +57,7 @@ describe("timestampDeduplication", () => {
       TE.left({ statusCode: 500 } as EL.errors.ResponseError)
     );
     await pipe(
-      timestampDeduplication(indexName, document)(mockService),
+      indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
           throw new Error(
@@ -78,7 +78,7 @@ describe("timestampDeduplication", () => {
       TE.right(({ _source: { _timestamp: 123 } } as unknown) as GetResponse)
     );
     await pipe(
-      timestampDeduplication(indexName, document)(mockService),
+      indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
           throw new Error(
@@ -102,7 +102,7 @@ describe("timestampDeduplication", () => {
     );
     mockUpdate.mockImplementationOnce(() => TE.right(constVoid));
     await pipe(
-      timestampDeduplication(indexName, document)(mockService),
+      indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
           throw new Error(
@@ -126,7 +126,7 @@ describe("timestampDeduplication", () => {
       TE.left(new Error("Error during update"))
     );
     await pipe(
-      timestampDeduplication(indexName, document)(mockService),
+      indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
         err => {
           expect(mockGet).toHaveBeenCalledWith(indexName, document);

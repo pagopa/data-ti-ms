@@ -36,7 +36,8 @@ const indexName = "test_index";
 const document: IOutputDocument = {
   id: "123",
   key1: "value1",
-  key2: "value2"
+  key2: "value2",
+  _timestamp: 10
 };
 
 describe("getElasticClient", () => {

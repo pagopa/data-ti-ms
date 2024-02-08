@@ -17,6 +17,7 @@ type ElasticResponseError = T.TypeOf<typeof ElasticResponseError>;
 
 export interface IOutputDocument {
   readonly [key: string]: unknown;
+  readonly _timestamp: number;
   readonly id: string;
 }
 
