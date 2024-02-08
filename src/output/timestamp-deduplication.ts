@@ -30,7 +30,7 @@ export const timestampDeduplication = (
       flow(
         O.chain(
           O.fromPredicate(
-            docRead => document._timestamp > docRead.fields._timestamp
+            docRead => document._timestamp > docRead._source._timestamp
           )
         ),
         O.map(() =>

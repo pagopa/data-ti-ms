@@ -75,7 +75,7 @@ describe("timestampDeduplication", () => {
 
   it("timestampDeduplication should do nothing while retrieving a document with a greater timestamp", async () => {
     mockGet.mockImplementationOnce(() =>
-      TE.right(({ fields: { _timestamp: 123 } } as unknown) as GetResponse)
+      TE.right(({ _source: { _timestamp: 123 } } as unknown) as GetResponse)
     );
     await pipe(
       timestampDeduplication(indexName, document)(mockService),
@@ -96,7 +96,7 @@ describe("timestampDeduplication", () => {
 
   it("timestampDeduplication should update index while retrieving a document with a lower timestamp", async () => {
     mockGet.mockImplementationOnce(() =>
-      TE.right(({ fields: { _timestamp: 1 } } as unknown) as GetResponse<
+      TE.right(({ _source: { _timestamp: 1 } } as unknown) as GetResponse<
         IOutputDocument
       >)
     );
@@ -120,7 +120,7 @@ describe("timestampDeduplication", () => {
 
   it("timestampDeduplication should return an error when an error occurs", async () => {
     mockGet.mockImplementationOnce(() =>
-      TE.right(({ fields: { _timestamp: 1 } } as unknown) as GetResponse)
+      TE.right(({ _source: { _timestamp: 1 } } as unknown) as GetResponse)
     );
     mockUpdate.mockImplementationOnce(() =>
       TE.left(new Error("Error during update"))
