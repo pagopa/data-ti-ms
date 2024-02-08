@@ -2,9 +2,9 @@ import * as EL from "@elastic/elasticsearch";
 import { GetResponse } from "@elastic/elasticsearch/lib/api/types";
 import * as TE from "fp-ts/TaskEither";
 import { constVoid, pipe } from "fp-ts/lib/function";
-import { timestampDeduplication } from "../algorithm";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "../elasticsearch/service";
+import { timestampDeduplication } from "../timestamp-deduplication";
 
 const mockGet = jest.fn();
 const mockInsert = jest.fn();
