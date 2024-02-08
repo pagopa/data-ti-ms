@@ -2,9 +2,9 @@ import * as EL from "@elastic/elasticsearch";
 import { GetResponse } from "@elastic/elasticsearch/lib/api/types";
 import * as TE from "fp-ts/TaskEither";
 import { constVoid, pipe } from "fp-ts/lib/function";
-import { timestampDeduplication } from "../algorithm";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "../elasticsearch/service";
+import { timestampDeduplication } from "../timestamp-deduplication";
 
 const mockGet = jest.fn();
 const mockInsert = jest.fn();
@@ -15,7 +15,7 @@ const mockService: IOutputDeduplicationService = {
   insert: mockInsert,
   update: mockUpdate
 };
-const elasticNode = "http://localhost:9200";
+
 const indexName = "test_index";
 const document: IOutputDocument = {
   id: "123",
@@ -39,7 +39,7 @@ describe("timestampDeduplication", () => {
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -60,7 +60,7 @@ describe("timestampDeduplication", () => {
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -81,7 +81,7 @@ describe("timestampDeduplication", () => {
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -96,13 +96,16 @@ describe("timestampDeduplication", () => {
 
   it("timestampDeduplication should update index while retrieving a document with a lower timestamp", async () => {
     mockGet.mockImplementationOnce(() =>
-      TE.right(({ fields: { _timestamp: 1 } } as unknown) as GetResponse)
+      TE.right(({ fields: { _timestamp: 1 } } as unknown) as GetResponse<
+        IOutputDocument
+      >)
     );
+    mockUpdate.mockImplementationOnce(() => TE.right(constVoid));
     await pipe(
       timestampDeduplication(indexName, document)(mockService),
       TE.bimap(
         () => {
-          new Error(
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
           );
         },
@@ -114,6 +117,7 @@ describe("timestampDeduplication", () => {
       )
     )();
   });
+
   it("timestampDeduplication should return an error when an error occurs", async () => {
     mockGet.mockImplementationOnce(() =>
       TE.right(({ fields: { _timestamp: 1 } } as unknown) as GetResponse)
@@ -130,10 +134,11 @@ describe("timestampDeduplication", () => {
           expect(mockInsert).not.toHaveBeenCalled();
           expect(err).toEqual(new Error("Error during update"));
         },
-        _ =>
-          new Error(
+        _ => {
+          throw new Error(
             `it should not fail while retrieving a document (404 error)`
-          )
+          );
+        }
       )
     )();
   });
