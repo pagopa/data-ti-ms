@@ -7,3 +7,4 @@ export const COSMOSDB_KEY = process.env.COSMOSDB_KEY;
 export const COSMOSDB_CONNECTION_STRING =
   process.env.COSMOSDB_CONNECTION_STRING ?? "COSMOSDB_CONNECTION_STRING";
 export const COSMOSDB_NAME = process.env.COSMOSDB_NAME ?? "db";
+export const ELASTIC_NODE = process.env.ELASTIC_NODE ?? "http://localhost:9200";

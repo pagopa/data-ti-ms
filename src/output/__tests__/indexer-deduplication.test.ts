@@ -100,6 +100,7 @@ describe("indexerDeduplication", () => {
       TE.right({ _source: { _timestamp: 1 } })
     );
     mockUpdate.mockImplementationOnce(() => TE.right(constVoid));
+
     await pipe(
       indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
