@@ -1,5 +1,3 @@
-import * as EL from "@elastic/elasticsearch";
-import { GetResponse } from "@elastic/elasticsearch/lib/api/types";
 import * as TE from "fp-ts/TaskEither";
 import { constVoid, pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
@@ -31,9 +29,7 @@ describe("indexerDeduplication", () => {
   });
 
   it("indexerDeduplication should insert while retrieving a document (404 error)", async () => {
-    mockGet.mockImplementationOnce(() =>
-      TE.left({ statusCode: 404 } as EL.errors.ResponseError)
-    );
+    mockGet.mockImplementationOnce(() => TE.left({ statusCode: 404 }));
     mockInsert.mockImplementationOnce(() => TE.right(constVoid));
     await pipe(
       indexerDeduplication(indexName, document)(mockService),
@@ -53,9 +49,7 @@ describe("indexerDeduplication", () => {
   });
 
   it("indexerDeduplication should do nothing while retrieving a document (500 error)", async () => {
-    mockGet.mockImplementationOnce(() =>
-      TE.left({ statusCode: 500 } as EL.errors.ResponseError)
-    );
+    mockGet.mockImplementationOnce(() => TE.left({ statusCode: 500 }));
     await pipe(
       indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
@@ -75,7 +69,7 @@ describe("indexerDeduplication", () => {
 
   it("indexerDeduplication should do nothing while retrieving a document with a greater timestamp", async () => {
     mockGet.mockImplementationOnce(() =>
-      TE.right(({ _source: { _timestamp: 123 } } as unknown) as GetResponse)
+      TE.right({ _source: { _timestamp: 123 } })
     );
     await pipe(
       indexerDeduplication(indexName, document)(mockService),
@@ -94,11 +88,9 @@ describe("indexerDeduplication", () => {
     )();
   });
 
-  it("indexerDeduplication should update index while retrieving a document with a lower timestamp", async () => {
+  it("indexerDeduplication should update the index while retrieving a document with a lower timestamp", async () => {
     mockGet.mockImplementationOnce(() =>
-      TE.right(({ _source: { _timestamp: 1 } } as unknown) as GetResponse<
-        IOutputDocument
-      >)
+      TE.right({ _source: { _timestamp: 1 } })
     );
     mockUpdate.mockImplementationOnce(() => TE.right(constVoid));
     await pipe(
@@ -118,9 +110,28 @@ describe("indexerDeduplication", () => {
     )();
   });
 
-  it("indexerDeduplication should return an error when an error occurs", async () => {
+  it("indexerDeduplication should do nothing while retrieving a document without the _source fields", async () => {
+    mockGet.mockImplementationOnce(() => TE.right({}));
+    await pipe(
+      indexerDeduplication(indexName, document)(mockService),
+      TE.bimap(
+        () => {
+          throw new Error(
+            `it should not fail while retrieving a document (404 error)`
+          );
+        },
+        _ => {
+          expect(mockGet).toHaveBeenCalledWith(indexName, document);
+          expect(mockUpdate).not.toHaveBeenCalled();
+          expect(mockInsert).not.toHaveBeenCalled();
+        }
+      )
+    )();
+  });
+
+  it("indexerDeduplication should return an error when an error occurs during the update", async () => {
     mockGet.mockImplementationOnce(() =>
-      TE.right(({ _source: { _timestamp: 1 } } as unknown) as GetResponse)
+      TE.right({ _source: { _timestamp: 1 } })
     );
     mockUpdate.mockImplementationOnce(() =>
       TE.left(new Error("Error during update"))
@@ -133,6 +144,29 @@ describe("indexerDeduplication", () => {
           expect(mockUpdate).toHaveBeenCalledWith(indexName, document);
           expect(mockInsert).not.toHaveBeenCalled();
           expect(err).toEqual(new Error("Error during update"));
+        },
+        _ => {
+          throw new Error(
+            `it should not fail while retrieving a document (404 error)`
+          );
+        }
+      )
+    )();
+  });
+
+  it("indexerDeduplication should return an error when an error occurs during the get", async () => {
+    mockGet.mockImplementationOnce(() => TE.left({ statusCode: 404 }));
+    mockInsert.mockImplementationOnce(() => TE.left(new Error()));
+    await pipe(
+      indexerDeduplication(indexName, document)(mockService),
+      TE.bimap(
+        err => {
+          expect(mockGet).toHaveBeenCalledWith(indexName, document);
+          expect(mockUpdate).not.toHaveBeenCalled();
+          expect(mockInsert).toHaveBeenCalledWith(indexName, document);
+          expect(err).toEqual(
+            new Error("Error during the insert of the document")
+          );
         },
         _ => {
           throw new Error(
