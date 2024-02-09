@@ -36,6 +36,7 @@
     },
     "dependencies": {
         "@azure/cosmos": "^4.0.0",
+        "@pagopa/data-indexer-commons": "^0.1.2",
         "@pagopa/fp-ts-kafkajs": "^1.0.1",
         "@pagopa/ts-commons": "^10.7.1",
         "@pagopa/winston-ts": "^2.2.0",
