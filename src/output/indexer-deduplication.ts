@@ -25,7 +25,7 @@ export const indexerDeduplication = (
             ),
           () => TE.right(O.none)
         ),
-        TE.mapLeft(() => new Error())
+        TE.mapLeft(() => new Error("Error during the insert of the document"))
       )
     ),
     TE.chain(
