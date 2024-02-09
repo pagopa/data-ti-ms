@@ -2,7 +2,6 @@
 import { defaultLog } from "@pagopa/winston-ts";
 import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
-import * as B from "fp-ts/boolean";
 import { flow, pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "./elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "./elasticsearch/service";
@@ -14,18 +13,24 @@ export const indexerDeduplication = (
   pipe(
     service.get(indexName, document),
     TE.map(O.some),
-    TE.orElseW(err =>
-      pipe(
-        err.statusCode !== 404,
-        B.fold(
-          () =>
-            pipe(
-              service.insert(indexName, document),
-              TE.map(() => O.none)
-            ),
-          () => TE.right(O.none)
+    TE.orElseW(
+      flow(
+        TE.fromPredicate(
+          err => err.statusCode === 404,
+          err =>
+            Error(
+              `Error while getting document from index - ${JSON.stringify(err)}`
+            )
         ),
-        TE.mapLeft(() => new Error("Error during the insert of the document"))
+        TE.chain(() =>
+          pipe(
+            service.insert(indexName, document),
+            TE.bimap(
+              () => new Error("Error during the insert of the document"),
+              () => O.none
+            )
+          )
+        )
       )
     ),
     TE.chain(
@@ -37,7 +42,7 @@ export const indexerDeduplication = (
               O.fromNullable,
               O.fold(
                 () => false,
-                doc => document._timestamp > doc._timestamp
+                sourceDoc => document._timestamp > sourceDoc._timestamp
               )
             )
           )
@@ -47,8 +52,7 @@ export const indexerDeduplication = (
             service.update(indexName, document),
             defaultLog.taskEither.info(
               `Document has a greater timestamp than the one in the index => updating index`
-            ),
-            TE.map(() => void 0)
+            )
           )
         ),
         O.getOrElse(() => TE.right(void 0))
