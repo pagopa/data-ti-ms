@@ -53,15 +53,22 @@ describe("indexerDeduplication", () => {
     await pipe(
       indexerDeduplication(indexName, document)(mockService),
       TE.bimap(
-        () => {
-          throw new Error(
-            `it should not fail while retrieving a document (404 error)`
-          );
-        },
-        _ => {
+        err => {
           expect(mockGet).toHaveBeenCalledWith(indexName, document);
           expect(mockUpdate).not.toHaveBeenCalled();
           expect(mockInsert).not.toHaveBeenCalled();
+          expect(err).toEqual(
+            new Error(
+              `Error while getting document from index - ${JSON.stringify({
+                statusCode: 500
+              })}`
+            )
+          );
+        },
+        () => {
+          throw new Error(
+            `it should fail while retrieving a document (404 error)`
+          );
         }
       )
     )();

@@ -3,6 +3,7 @@ import {
   DateFromTimestamp,
   UtcOnlyIsoDateFromString
 } from "@pagopa/ts-commons/lib/dates";
+import { OutputFormat } from "@pagopa/data-indexer-commons";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
@@ -61,14 +62,6 @@ export const dateStringFromTimestampFormat = (
       date => date.toDateString()
     )
   );
-
-export const OutputFormat = t.union([
-  t.literal("yyyy-MM-dd"),
-  t.literal("yyyy-MM-dd HH:mm"),
-  t.literal("yyyy-MM-dd HH:mm:ss")
-]);
-
-type OutputFormat = t.TypeOf<typeof OutputFormat>;
 
 const DateComponents = t.type({
   day: t.string,
