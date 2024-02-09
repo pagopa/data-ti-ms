@@ -9,8 +9,6 @@ export type QueryClient = CosmosClient;
 
 export interface IQueueEnrichment {
   readonly findByKey: (
-    client: QueryClient
-  ) => (
     database: string,
     containerName: string,
     id: string,
@@ -18,8 +16,6 @@ export interface IQueueEnrichment {
   ) => TE.TaskEither<Error, O.Option<unknown>>;
 
   readonly findLastVersionByKey: (
-    client: QueryClient
-  ) => (
     database: string,
     containerName: string,
     versionFieldName: string,
@@ -35,11 +31,8 @@ export const createCosmosQueryEnrichmentService = (
 ): E.Either<Error, IQueueEnrichment> =>
   pipe(
     E.tryCatch(() => new CosmosClient(connectionString), E.toError),
-    E.map(
-      client =>
-        (({
-          findByKey: findByKey(client),
-          findLastVersionByKey: findLastVersionByKey(client)
-        } as unknown) as IQueueEnrichment)
-    )
+    E.map(client => ({
+      findByKey: findByKey(client),
+      findLastVersionByKey: findLastVersionByKey(client)
+    }))
   );

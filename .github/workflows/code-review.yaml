@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 10 # temp fix
     runs-on: ubuntu-latest
 
+    environment: IntegrationTests
+
     steps:
       - name: Check out code
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab #v3.5.2
@@ -44,3 +46,15 @@ jobs:
 
       - name: 'Code review'
         run: yarn run code-review
+      
+      - name: Set env
+        run: |
+          echo "NODE_TLS_REJECT_UNAUTHORIZED=0" >> $GITHUB_ENV
+          echo "COSMOSDB_NAME=${{github.run_id}}" >> $GITHUB_ENV
+          echo "COSMOSDB_CONNECTION_STRING=${{secrets.COSMOSDB_CONNECTION_STRING}}" >> $GITHUB_ENV
+
+      - name: System tests
+        run: |
+          cd __integrations__
+          yarn install --immutable
+          yarn test
