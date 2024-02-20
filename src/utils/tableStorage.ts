@@ -1,8 +1,8 @@
 import * as DT from "@azure/data-tables";
-import { pipe } from "fp-ts/lib/function";
-import * as TE from "fp-ts/lib/TaskEither";
-import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
+import * as O from "fp-ts/lib/Option";
+import * as TE from "fp-ts/lib/TaskEither";
+import { constVoid, pipe } from "fp-ts/lib/function";
 import * as t from "io-ts";
 
 export const TableStorageDocument = t.type({
@@ -36,4 +36,13 @@ export const getTableDocument = <T extends Record<string, unknown>>(
         TE.map(() => O.none)
       )
     )
+  );
+
+export const upsertTableDocument = <T extends Record<string, unknown>>(
+  tableClient: DT.TableClient,
+  document: DT.TableEntity<T>
+): TE.TaskEither<Error, void> =>
+  pipe(
+    TE.tryCatch(() => tableClient.upsertEntity<T>(document), E.toError),
+    TE.map(constVoid)
   );
