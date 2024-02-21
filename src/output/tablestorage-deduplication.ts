@@ -20,11 +20,7 @@ export const tableStorageDeduplication = (
     TE.Do,
     defaultLog.taskEither.info(`tableStorageDeduplication => ${document}`),
     defaultLog.taskEither.info(`creating table => ${indexName}`),
-    () =>
-      pipe(
-        () => tableClient.createTable,
-        () => getTableDocument(tableClient, indexName, document.id)
-      ),
+    () => getTableDocument(tableClient, indexName, document.id),
     defaultLog.taskEither.infoLeft(
       e => `Error getting document from index table => ${String(e)}`
     ),
