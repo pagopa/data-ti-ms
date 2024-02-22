@@ -2,7 +2,10 @@ import {
   DeduplicationStrategyType,
   getDeduplicationStrategy
 } from "../factory";
-import { indexerDeduplicationStrategy } from "../service";
+import {
+  indexerDeduplicationStrategy,
+  tableStorageDeduplicationStrategy
+} from "../service";
 
 describe("getDeduplicationStrategy", () => {
   afterEach(() => {
@@ -24,11 +27,10 @@ describe("getDeduplicationStrategy", () => {
     );
   });
 
-  it("should throw an error for not implemented strategy", () => {
-    const notImplementedStrategy = DeduplicationStrategyType.TableStorage;
+  it("should return tablestorage deduplication strategy", () => {
+    const strategyType = DeduplicationStrategyType.TableStorage;
+    const strategy = getDeduplicationStrategy(strategyType);
 
-    expect(() => getDeduplicationStrategy(notImplementedStrategy)).toThrow(
-      "Strategy not already implemented"
-    );
+    expect(strategy).toEqual(tableStorageDeduplicationStrategy);
   });
 });
