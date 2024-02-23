@@ -12,10 +12,9 @@ export const TableStorageDocument = t.type({
 export type TableStorageDocument = t.TypeOf<typeof TableStorageDocument>;
 
 export const getTableClient = (
-  connectionString: string,
   tableName: string,
   opts?: DT.TableServiceClientOptions
-): DT.TableClient =>
+) => (connectionString: string): DT.TableClient =>
   DT.TableClient.fromConnectionString(connectionString, tableName, opts);
 
 export const getTableDocument = <T extends Record<string, unknown>>(

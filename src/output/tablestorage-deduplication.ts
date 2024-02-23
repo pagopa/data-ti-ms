@@ -1,37 +1,45 @@
 /* eslint-disable sort-keys */
-import { TableClient } from "@azure/data-tables";
-import * as EL from "@elastic/elasticsearch";
 import { defaultLog } from "@pagopa/winston-ts";
 import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import { constVoid, flow, pipe } from "fp-ts/lib/function";
-import { getTableDocument, upsertTableDocument } from "../utils/tableStorage";
 import {
-  IOutputDocument,
-  indexDocument,
-  updateIndexDocument
-} from "./elasticsearch/elasticsearch";
+  getTableClient,
+  getTableDocument,
+  upsertTableDocument
+} from "../utils/tableStorage";
+import { IOutputDocument } from "./elasticsearch/elasticsearch";
+import { IOutputDeduplicationService } from "./elasticsearch/service";
+
 export const tableStorageDeduplication = (
-  elasticClient: EL.Client,
-  tableClient: TableClient,
-  indexName: string
-) => (document: IOutputDocument): TE.TaskEither<Error, void> =>
+  indexName: string,
+  document: IOutputDocument
+) => (service: IOutputDeduplicationService): TE.TaskEither<Error, void> =>
   pipe(
     TE.Do,
-    defaultLog.taskEither.info(`tableStorageDeduplication => ${document}`),
-    defaultLog.taskEither.info(`creating table => ${indexName}`),
-    () => getTableDocument(tableClient, indexName, document.id),
-    defaultLog.taskEither.infoLeft(
-      e => `Error getting document from index table => ${String(e)}`
-    ),
-    defaultLog.taskEither.info("indexing document"),
-    TE.chain(
-      flow(
-        O.map(() => updateIndexDocument(elasticClient)(indexName, document)),
-        O.getOrElse(() => indexDocument(elasticClient)(indexName, document))
+    TE.bind("tableClient", () =>
+      TE.of(
+        getTableClient(indexName)(process.env.TABLE_STORAGE_CONNECTION_STRING)
       )
     ),
-    TE.chain(() =>
+    defaultLog.taskEither.info(`tableStorageDeduplication => ${document}`),
+    defaultLog.taskEither.info(`creating table => ${indexName}`),
+    TE.chainFirst(({ tableClient }) =>
+      pipe(
+        getTableDocument(tableClient, indexName, document.id),
+        defaultLog.taskEither.infoLeft(
+          e => `Error getting document from index table => ${String(e)}`
+        ),
+        defaultLog.taskEither.info("indexing document"),
+        TE.chain(
+          flow(
+            O.map(() => service.update(indexName, document)),
+            O.getOrElse(() => service.insert(indexName, document))
+          )
+        )
+      )
+    ),
+    TE.chainFirst(({ tableClient }) =>
       upsertTableDocument(tableClient, {
         rowKey: document.id,
         partitionKey: indexName,

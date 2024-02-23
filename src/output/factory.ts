@@ -1,6 +1,7 @@
 import {
   IDeduplicationStrategy,
-  indexerDeduplicationStrategy
+  indexerDeduplicationStrategy,
+  tableStorageDeduplicationStrategy
 } from "./service";
 
 export enum DeduplicationStrategyType {
@@ -15,7 +16,7 @@ export const getDeduplicationStrategy = (
     case DeduplicationStrategyType.Indexer:
       return indexerDeduplicationStrategy;
     case DeduplicationStrategyType.TableStorage:
-      throw new Error("Strategy not already implemented");
+      return tableStorageDeduplicationStrategy;
     default:
       throw new Error("Strategy not supported");
   }
