@@ -32,12 +32,13 @@ describe("tableStorageDeduplication", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
   });
 
   it("should index a new document and store it in table if document does not exist", async () => {
     getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
-    mockInsert.mockImplementationOnce((_, __) => TE.right(void 0));
+    mockInsert.mockImplementationOnce(() => TE.right(void 0));
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
@@ -69,7 +70,7 @@ describe("tableStorageDeduplication", () => {
     getTableDocumentSpy.mockImplementationOnce(() =>
       TE.right(O.some({} as Record<string, unknown>))
     );
-    mockUpdate.mockImplementationOnce(() => () => TE.right(void 0));
+    mockUpdate.mockImplementationOnce(() => TE.right(void 0));
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
@@ -126,7 +127,7 @@ describe("tableStorageDeduplication", () => {
   it("should handle error when indexing document", async () => {
     getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
-    mockInsert.mockImplementationOnce(() => () =>
+    mockInsert.mockImplementationOnce(() =>
       TE.left(new Error("Failed to index document"))
     );
 
@@ -144,7 +145,7 @@ describe("tableStorageDeduplication", () => {
           expect(mockUpdate).not.toHaveBeenCalled();
           expect(upsertTableDocumentSpy).not.toHaveBeenCalled();
         },
-        () => {
+        err => {
           throw new Error("it should not fail");
         }
       )
@@ -156,7 +157,7 @@ describe("tableStorageDeduplication", () => {
     getTableDocumentSpy.mockImplementationOnce(() =>
       TE.right(O.some({} as Record<string, unknown>))
     );
-    mockUpdate.mockImplementationOnce(() => () =>
+    mockUpdate.mockImplementationOnce(() =>
       TE.left(new Error("Failed to update the document index"))
     );
 
@@ -188,8 +189,7 @@ describe("tableStorageDeduplication", () => {
     getTableDocumentSpy.mockImplementationOnce(() =>
       TE.right(O.some({} as Record<string, unknown>))
     );
-
-    mockUpdate.mockImplementationOnce(() => () => TE.right(void 0));
+    mockUpdate.mockImplementationOnce(() => TE.right(void 0));
     upsertTableDocumentSpy.mockImplementationOnce(() =>
       TE.left(new Error("Failed to insert on table storage"))
     );
