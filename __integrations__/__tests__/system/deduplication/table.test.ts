@@ -14,6 +14,7 @@ import {
 } from "../../../../src/output/factory";
 import { ELASTIC_NODE, STORAGE_CONN_STRING } from "../../../env";
 import { deleteData, deleteIndex } from "../../../utils/elasticsearch";
+import { createTable, getTableClient } from "../../../../src/utils/tableStorage";
 
 const INDEX_NAME = "index_name2";
 const FIRST_ID = "first_id";
@@ -39,6 +40,7 @@ beforeAll(async () => {
     getElasticClient(ELASTIC_NODE),
     TE.fromEither,
     TE.chainFirst((client) => createIndexIfNotExists(client, INDEX_NAME)),
+    TE.chain(() => createTable(getTableClient(INDEX_NAME)(STORAGE_CONN_STRING))),
     TE.getOrElse((e) => {
       throw Error(
         `Cannot initialize integration tests - ${JSON.stringify(e.message)}`,

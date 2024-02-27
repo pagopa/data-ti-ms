@@ -17,6 +17,11 @@ export const getTableClient = (
 ) => (connectionString: string): DT.TableClient =>
   DT.TableClient.fromConnectionString(connectionString, tableName, opts);
 
+export const createTable = (
+  tableClient: DT.TableClient
+): TE.TaskEither<Error, void> =>
+  TE.tryCatch(() => tableClient.createTable(), E.toError);
+
 export const getTableDocument = <T extends Record<string, unknown>>(
   tableClient: DT.TableClient,
   partitionKey: string,
