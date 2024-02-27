@@ -16,6 +16,6 @@ export const STORAGE_CONN_STRING = pipe(
   NonEmptyString.decode,
   E.getOrElse(
     () =>
-      "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://storage-account:20003/devstoreaccount1;QueueEndpoint=http://storage-account:20004/devstoreaccount1;TableEndpoint=http://storage-account:20005/devstoreaccount1;" as NonEmptyString,
+      "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://localhost:20003/devstoreaccount1;QueueEndpoint=http://localhost:20004/devstoreaccount1;TableEndpoint=http://localhost:20005/devstoreaccount1;" as NonEmptyString,
   ),
 );
