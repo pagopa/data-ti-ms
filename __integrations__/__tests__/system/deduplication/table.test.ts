@@ -12,10 +12,15 @@ import {
   DeduplicationStrategyType,
   getDeduplicationStrategy,
 } from "../../../../src/output/factory";
-import { ELASTIC_NODE } from "../../../env";
+import { ELASTIC_NODE, STORAGE_CONN_STRING } from "../../../env";
+import {
+  createTable,
+  deleteTable,
+  getTableClient,
+} from "../../../../src/utils/tableStorage";
 import { deleteData, deleteIndex } from "../../../utils/elasticsearch";
 
-const INDEX_NAME = "index_name";
+const INDEX_NAME = "index";
 const FIRST_ID = "first_id";
 
 const currentTimestamp = Date.now();
@@ -33,43 +38,56 @@ const olderDocument = {
   value: "first",
 };
 
-const deduplicationStrategyConfig: DeduplicationStrategyConfig = { type: DeduplicationStrategyType.Indexer };
+const tableDeduplicationStrategyConfig: DeduplicationStrategyConfig = {
+  type: DeduplicationStrategyType.TableStorage,
+  storageConnectionString: STORAGE_CONN_STRING,
+};
 
-beforeAll(async () => {
-  await pipe(
-    getElasticClient(ELASTIC_NODE),
-    TE.fromEither,
-    TE.chainFirst((client) => createIndexIfNotExists(client, INDEX_NAME)),
-    TE.getOrElse((e) => {
-      throw Error(
-        `Cannot initialize integration tests - ${JSON.stringify(e.message)}`,
-      );
-    }),
-  )();
-}, 10000);
-
-afterAll(async () => {
-  await pipe(
-    getElasticClient(ELASTIC_NODE),
-    TE.fromEither,
-    TE.chainFirst((client) => deleteData(client, INDEX_NAME, FIRST_ID)),
-    TE.chainFirst((client) => deleteIndex(client, INDEX_NAME)),
-    TE.getOrElse((e) => {
-      throw Error(
-        `Cannot destroy integration tests data - ${JSON.stringify(e.message)}`,
-      );
-    }),
-  )();
-}, 10000);
-
-describe("deduplication", () => {
+describe("table deduplication", () => {
+  beforeAll(async () => {
+    await pipe(
+      getElasticClient(ELASTIC_NODE),
+      TE.fromEither,
+      TE.chainFirst((client) => createIndexIfNotExists(client, INDEX_NAME)),
+      TE.chain(() =>
+        createTable(
+          getTableClient(INDEX_NAME, { allowInsecureConnection: true })(
+            STORAGE_CONN_STRING,
+          ),
+        ),
+      ),
+      TE.getOrElse((e) => {
+        throw Error(
+          `Cannot initialize integration tests - ${JSON.stringify(e.message)}`,
+        );
+      }),
+    )();
+  }, 10000);
+  
+  afterAll(async () => {
+    await pipe(
+      getElasticClient(ELASTIC_NODE),
+      TE.fromEither,
+      TE.chainFirst((client) => deleteIndex(client, INDEX_NAME)),
+      TE.chain(() => deleteTable(
+        getTableClient(INDEX_NAME, { allowInsecureConnection: true })(
+          STORAGE_CONN_STRING,
+        ),
+      )),
+      TE.getOrElse((e) => {
+        throw Error(
+          `Cannot destroy integration tests data - ${JSON.stringify(e.message)}`,
+        );
+      }),
+    )();
+  }, 10000);
   it("should create the document when it doesn't exists", async () => {
     await pipe(
       E.Do,
       E.bind("service", () => getElasticSearchService(ELASTIC_NODE)),
       E.bind("strategy", () =>
         E.tryCatch(
-          () => getDeduplicationStrategy(deduplicationStrategyConfig),
+          () => getDeduplicationStrategy(tableDeduplicationStrategyConfig),
           E.toError,
         ),
       ),
@@ -100,7 +118,7 @@ describe("deduplication", () => {
       E.bind("service", () => getElasticSearchService(ELASTIC_NODE)),
       E.bind("strategy", () =>
         E.tryCatch(
-          () => getDeduplicationStrategy(deduplicationStrategyConfig),
+          () => getDeduplicationStrategy(tableDeduplicationStrategyConfig),
           E.toError,
         ),
       ),
@@ -130,7 +148,10 @@ describe("deduplication", () => {
       E.Do,
       E.bind("service", () => getElasticSearchService(ELASTIC_NODE)),
       E.bind("strategy", () =>
-        E.tryCatch(() => getDeduplicationStrategy(deduplicationStrategyConfig), E.toError),
+        E.tryCatch(
+          () => getDeduplicationStrategy(tableDeduplicationStrategyConfig),
+          E.toError,
+        ),
       ),
       TE.fromEither,
       TE.chainFirst(({ service, strategy }) =>
