@@ -1,3 +1,4 @@
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import {
   DeduplicationStrategyType,
   getDeduplicationStrategy
@@ -13,14 +14,14 @@ describe("getDeduplicationStrategy", () => {
   });
 
   it("should return indexer deduplication strategy", () => {
-    const strategyType = DeduplicationStrategyType.Indexer;
+    const strategyType = { type: DeduplicationStrategyType.Indexer } as any;
     const strategy = getDeduplicationStrategy(strategyType);
 
     expect(strategy).toEqual(indexerDeduplicationStrategy);
   });
 
   it("should throw an error for unsupported strategy", () => {
-    const unsupportedStrategy = "unsupportedStrategy" as DeduplicationStrategyType;
+    const unsupportedStrategy = "unsupportedStrategy" as any;
 
     expect(() => getDeduplicationStrategy(unsupportedStrategy)).toThrow(
       "Strategy not supported"
@@ -29,7 +30,10 @@ describe("getDeduplicationStrategy", () => {
 
   it("should return tablestorage deduplication strategy", () => {
     const strategyType = DeduplicationStrategyType.TableStorage;
-    const strategy = getDeduplicationStrategy(strategyType);
+    const strategy = getDeduplicationStrategy({
+      type: strategyType,
+      storageConnectionString: "foo" as NonEmptyString
+    });
 
     expect(strategy).toEqual(tableStorageDeduplicationStrategy);
   });

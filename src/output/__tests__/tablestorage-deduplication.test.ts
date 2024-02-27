@@ -7,13 +7,14 @@ import { pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "../elasticsearch/service";
 import { tableStorageDeduplication } from "../tablestorage-deduplication";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 const mockDocument: IOutputDocument = {
   id: "testId",
   _timestamp: 2
 };
 const mockTableClient = {} as TableClient;
-
+const tableStorageConnectionString = "ConnString" as NonEmptyString
 const mockGet = jest.fn();
 const mockInsert = jest.fn().mockImplementation(() => TE.right(void 0));
 const mockUpdate = jest.fn().mockImplementation(() => TE.right(void 0));
@@ -42,7 +43,7 @@ describe("tableStorageDeduplication", () => {
     );
 
     await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(new Error("Failed to get document"));
@@ -69,7 +70,7 @@ describe("tableStorageDeduplication", () => {
       TE.left(new Error("Failed to index document"))
     );
     await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(new Error("Failed to index document"));
@@ -99,7 +100,7 @@ describe("tableStorageDeduplication", () => {
     );
 
     await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(
@@ -129,7 +130,7 @@ describe("tableStorageDeduplication", () => {
     );
 
     await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(
@@ -156,7 +157,7 @@ describe("tableStorageDeduplication", () => {
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
       TE.bimap(
         () => {
           throw new Error("it should not fail");
@@ -189,7 +190,7 @@ describe("tableStorageDeduplication", () => {
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
       TE.bimap(
         () => {
           throw new Error("it should not fail");
@@ -222,7 +223,7 @@ describe("tableStorageDeduplication", () => {
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
       TE.bimap(
         () => {
           throw new Error("it should not fail");

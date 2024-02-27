@@ -12,7 +12,7 @@ import {
   DeduplicationStrategyType,
   getDeduplicationStrategy,
 } from "../../../../src/output/factory";
-import { ELASTIC_NODE } from "../../../env";
+import { ELASTIC_NODE, STORAGE_CONN_STRING } from "../../../env";
 import { deleteData, deleteIndex } from "../../../utils/elasticsearch";
 
 const INDEX_NAME = "index_name";
@@ -33,8 +33,7 @@ const olderDocument = {
   value: "first",
 };
 
-const deduplicationStrategyConfig: DeduplicationStrategyConfig = { type: DeduplicationStrategyType.Indexer };
-
+const deduplicationStrategyConfig: DeduplicationStrategyConfig = { type: DeduplicationStrategyType.TableStorage, storageConnectionString: STORAGE_CONN_STRING };
 beforeAll(async () => {
   await pipe(
     getElasticClient(ELASTIC_NODE),
@@ -62,7 +61,7 @@ afterAll(async () => {
   )();
 }, 10000);
 
-describe("deduplication", () => {
+describe("table deduplication", () => {
   it("should create the document when it doesn't exists", async () => {
     await pipe(
       E.Do,
@@ -130,7 +129,10 @@ describe("deduplication", () => {
       E.Do,
       E.bind("service", () => getElasticSearchService(ELASTIC_NODE)),
       E.bind("strategy", () =>
-        E.tryCatch(() => getDeduplicationStrategy(deduplicationStrategyConfig), E.toError),
+        E.tryCatch(
+          () => getDeduplicationStrategy(deduplicationStrategyConfig),
+          E.toError,
+        ),
       ),
       TE.fromEither,
       TE.chainFirst(({ service, strategy }) =>

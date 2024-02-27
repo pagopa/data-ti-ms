@@ -3,6 +3,7 @@ import { defaultLog } from "@pagopa/winston-ts";
 import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import { constVoid, flow, pipe } from "fp-ts/lib/function";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import {
   getTableClient,
   getTableDocument,
@@ -12,15 +13,14 @@ import { IOutputDocument } from "./elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "./elasticsearch/service";
 
 export const tableStorageDeduplication = (
-  indexName: string,
-  document: IOutputDocument
-) => (service: IOutputDeduplicationService): TE.TaskEither<Error, void> =>
+  tableStorageConnectionString: NonEmptyString
+) => (indexName: string, document: IOutputDocument) => (
+  service: IOutputDeduplicationService
+): TE.TaskEither<Error, void> =>
   pipe(
     TE.Do,
     TE.bind("tableClient", () =>
-      TE.of(
-        getTableClient(indexName)(process.env.TABLE_STORAGE_CONNECTION_STRING)
-      )
+      TE.of(getTableClient(indexName)(tableStorageConnectionString))
     ),
     defaultLog.taskEither.info(`tableStorageDeduplication => ${document}`),
     TE.chain(({ tableClient }) =>
