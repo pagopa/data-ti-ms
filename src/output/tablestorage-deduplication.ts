@@ -23,28 +23,54 @@ export const tableStorageDeduplication = (
       )
     ),
     defaultLog.taskEither.info(`tableStorageDeduplication => ${document}`),
-    defaultLog.taskEither.info(`creating table => ${indexName}`),
-    TE.chainFirst(({ tableClient }) =>
+    TE.chain(({ tableClient }) =>
       pipe(
-        getTableDocument(tableClient, indexName, document.id),
+        getTableDocument<IOutputDocument>(tableClient, indexName, document.id),
         defaultLog.taskEither.infoLeft(
           e => `Error getting document from index table => ${String(e)}`
         ),
         defaultLog.taskEither.info("indexing document"),
         TE.chain(
           flow(
-            O.map(() => service.update(indexName, document)),
-            O.getOrElse(() => service.insert(indexName, document))
+            O.fold(
+              () =>
+                pipe(
+                  service.insert(indexName, document),
+                  TE.map(() => O.some(document))
+                ),
+              flow(
+                O.fromPredicate(
+                  // eslint-disable-next-line no-underscore-dangle
+                  retrievedDoc => retrievedDoc._timestamp < document._timestamp
+                ),
+                O.map(() =>
+                  pipe(
+                    service.update(indexName, document),
+                    TE.map(() => O.some(document))
+                  )
+                ),
+                O.getOrElse(() => TE.right(O.none))
+              )
+            ),
+            TE.chain(
+              flow(
+                O.map(() =>
+                  pipe(
+                    upsertTableDocument(tableClient, {
+                      rowKey: document.id,
+                      partitionKey: indexName,
+                      id: document.id,
+                      // eslint-disable-next-line no-underscore-dangle
+                      _timestamp: document._timestamp
+                    }),
+                    TE.map(constVoid)
+                  )
+                ),
+                O.getOrElse(() => TE.right(void 0))
+              )
+            )
           )
         )
       )
-    ),
-    TE.chainFirst(({ tableClient }) =>
-      upsertTableDocument(tableClient, {
-        rowKey: document.id,
-        partitionKey: indexName,
-        id: document.id
-      })
-    ),
-    TE.map(constVoid)
+    )
   );

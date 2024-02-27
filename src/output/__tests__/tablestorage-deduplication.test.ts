@@ -8,11 +8,15 @@ import { IOutputDocument } from "../elasticsearch/elasticsearch";
 import { IOutputDeduplicationService } from "../elasticsearch/service";
 import { tableStorageDeduplication } from "../tablestorage-deduplication";
 
+const mockDocument: IOutputDocument = {
+  id: "testId",
+  _timestamp: 2
+};
 const mockTableClient = {} as TableClient;
 
 const mockGet = jest.fn();
-const mockInsert = jest.fn();
-const mockUpdate = jest.fn();
+const mockInsert = jest.fn().mockImplementation(() => TE.right(void 0));
+const mockUpdate = jest.fn().mockImplementation(() => TE.right(void 0));
 
 const mockService: IOutputDeduplicationService = {
   get: mockGet,
@@ -22,79 +26,13 @@ const mockService: IOutputDeduplicationService = {
 
 const getTableClient = jest.spyOn(tableUtils, "getTableClient");
 const getTableDocumentSpy = jest.spyOn(tableUtils, "getTableDocument");
-const upsertTableDocumentSpy = jest.spyOn(tableUtils, "upsertTableDocument");
+const upsertTableDocumentSpy = jest
+  .spyOn(tableUtils, "upsertTableDocument")
+  .mockImplementation(() => TE.right(void 0));
 
 describe("tableStorageDeduplication", () => {
-  const mockDocument: IOutputDocument = {
-    id: "testId",
-    _timestamp: 1
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.resetModules();
-  });
-
-  it("should index a new document and store it in table if document does not exist", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
-    getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
-    mockInsert.mockImplementationOnce(() => TE.right(void 0));
-    upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
-
-    await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
-      TE.bimap(
-        () => {
-          throw new Error("it should not fail");
-        },
-        result => {
-          expect(result).toEqual(void 0);
-          expect(getTableDocumentSpy).toHaveBeenCalledWith(
-            mockTableClient,
-            "testIndex",
-            "testId"
-          );
-          expect(mockInsert).toHaveBeenCalledWith("testIndex", mockDocument);
-          expect(upsertTableDocumentSpy).toHaveBeenCalledWith(mockTableClient, {
-            rowKey: "testId",
-            partitionKey: "testIndex",
-            id: "testId"
-          });
-        }
-      )
-    )();
-  });
-
-  it("should update existing document in index and store it in table if document already exists", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
-    getTableDocumentSpy.mockImplementationOnce(() =>
-      TE.right(O.some({} as Record<string, unknown>))
-    );
-    mockUpdate.mockImplementationOnce(() => TE.right(void 0));
-    upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
-
-    await pipe(
-      tableStorageDeduplication("testIndex", mockDocument)(mockService),
-      TE.bimap(
-        () => {
-          throw new Error("it should not fail");
-        },
-        result => {
-          expect(result).toEqual(void 0);
-          expect(getTableDocumentSpy).toHaveBeenCalledWith(
-            mockTableClient,
-            "testIndex",
-            "testId"
-          );
-          expect(mockUpdate).toHaveBeenCalledWith("testIndex", mockDocument);
-          expect(upsertTableDocumentSpy).toHaveBeenCalledWith(mockTableClient, {
-            rowKey: "testId",
-            partitionKey: "testIndex",
-            id: "testId"
-          });
-        }
-      )
-    )();
   });
 
   it("should handle error when getting document from table", async () => {
@@ -130,7 +68,6 @@ describe("tableStorageDeduplication", () => {
     mockInsert.mockImplementationOnce(() =>
       TE.left(new Error("Failed to index document"))
     );
-
     await pipe(
       tableStorageDeduplication("testIndex", mockDocument)(mockService),
       TE.bimap(
@@ -155,7 +92,7 @@ describe("tableStorageDeduplication", () => {
   it("should handle error when updating document index", async () => {
     getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() =>
-      TE.right(O.some({} as Record<string, unknown>))
+      TE.right(O.some({ _timestamp: 1 }))
     );
     mockUpdate.mockImplementationOnce(() =>
       TE.left(new Error("Failed to update the document index"))
@@ -184,12 +121,9 @@ describe("tableStorageDeduplication", () => {
     )();
   });
 
-  it("should handle error when upserting on table storage", async () => {
+  it("should handle error when inserting on table storage", async () => {
     getTableClient.mockImplementationOnce(() => () => mockTableClient);
-    getTableDocumentSpy.mockImplementationOnce(() =>
-      TE.right(O.some({} as Record<string, unknown>))
-    );
-    mockUpdate.mockImplementationOnce(() => TE.right(void 0));
+    getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
     upsertTableDocumentSpy.mockImplementationOnce(() =>
       TE.left(new Error("Failed to insert on table storage"))
     );
@@ -206,13 +140,8 @@ describe("tableStorageDeduplication", () => {
             "testIndex",
             "testId"
           );
-          expect(mockUpdate).toHaveBeenCalledWith("testIndex", mockDocument);
-          expect(mockInsert).not.toHaveBeenCalled();
-          expect(upsertTableDocumentSpy).toHaveBeenCalledWith(mockTableClient, {
-            rowKey: "testId",
-            partitionKey: "testIndex",
-            id: "testId"
-          });
+          expect(mockUpdate).not.toHaveBeenCalled();
+          expect(mockInsert).toHaveBeenCalledWith("testIndex", mockDocument);
         },
         () => {
           throw new Error("it should not fail");
@@ -220,4 +149,96 @@ describe("tableStorageDeduplication", () => {
       )
     )();
   });
+  it("should index a new document and store it in table if document does not exist", async () => {
+    getTableClient.mockImplementationOnce(() => () => mockTableClient);
+    getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
+    mockInsert.mockImplementationOnce(() => TE.right(void 0));
+    upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
+
+    await pipe(
+      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      TE.bimap(
+        () => {
+          throw new Error("it should not fail");
+        },
+        result => {
+          expect(result).toEqual(void 0);
+          expect(getTableDocumentSpy).toHaveBeenCalledWith(
+            mockTableClient,
+            "testIndex",
+            "testId"
+          );
+          expect(mockInsert).toHaveBeenCalledWith("testIndex", mockDocument);
+          expect(upsertTableDocumentSpy).toHaveBeenCalledWith(mockTableClient, {
+            rowKey: "testId",
+            partitionKey: "testIndex",
+            id: "testId",
+            _timestamp: mockDocument._timestamp
+          });
+        }
+      )
+    )();
+  });
+
+  it("should update existing document in index and store it in table if existing document is older than new document", async () => {
+    getTableClient.mockImplementationOnce(() => () => mockTableClient);
+    getTableDocumentSpy.mockImplementationOnce(() =>
+      TE.right(O.some({ _timestamp: 1 } as Record<string, unknown>))
+    );
+    mockUpdate.mockImplementationOnce(() => TE.right(void 0));
+    upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
+
+    await pipe(
+      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      TE.bimap(
+        () => {
+          throw new Error("it should not fail");
+        },
+        result => {
+          expect(result).toEqual(void 0);
+          expect(getTableDocumentSpy).toHaveBeenCalledWith(
+            mockTableClient,
+            "testIndex",
+            "testId"
+          );
+          expect(mockUpdate).toHaveBeenCalledWith("testIndex", mockDocument);
+          expect(upsertTableDocumentSpy).toHaveBeenCalledWith(mockTableClient, {
+            rowKey: "testId",
+            partitionKey: "testIndex",
+            id: "testId",
+            _timestamp: mockDocument._timestamp
+          });
+        }
+      )
+    )();
+  });
+
+  it("should not upsert document in index and store it in table if existing document is newer than occuring document", async () => {
+    getTableClient.mockImplementationOnce(() => () => mockTableClient);
+    getTableDocumentSpy.mockImplementationOnce(() =>
+      TE.right(O.some({ _timestamp: 3 }))
+    );
+    mockInsert.mockImplementationOnce(() => TE.right(void 0));
+    upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
+
+    await pipe(
+      tableStorageDeduplication("testIndex", mockDocument)(mockService),
+      TE.bimap(
+        () => {
+          throw new Error("it should not fail");
+        },
+        result => {
+          expect(result).toEqual(void 0);
+          expect(getTableDocumentSpy).toHaveBeenCalledWith(
+            mockTableClient,
+            "testIndex",
+            "testId"
+          );
+          expect(mockUpdate).not.toHaveBeenCalled();
+          expect(mockInsert).not.toHaveBeenCalled();
+        }
+      )
+    )();
+  });
+
 });
