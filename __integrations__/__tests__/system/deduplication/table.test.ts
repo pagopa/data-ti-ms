@@ -15,8 +15,10 @@ import {
 import { ELASTIC_NODE, STORAGE_CONN_STRING } from "../../../env";
 import {
   createTable,
+  deleteTable,
   getTableClient,
 } from "../../../../src/utils/tableStorage";
+import { deleteData, deleteIndex } from "../../../utils/elasticsearch";
 
 const INDEX_NAME = "index";
 const FIRST_ID = "first_id";
@@ -40,27 +42,45 @@ const tableDeduplicationStrategyConfig: DeduplicationStrategyConfig = {
   type: DeduplicationStrategyType.TableStorage,
   storageConnectionString: STORAGE_CONN_STRING,
 };
-beforeAll(async () => {
-  await pipe(
-    getElasticClient(ELASTIC_NODE),
-    TE.fromEither,
-    TE.chainFirst((client) => createIndexIfNotExists(client, INDEX_NAME)),
-    TE.chain(() =>
-      createTable(
+
+describe("table deduplication", () => {
+  beforeAll(async () => {
+    await pipe(
+      getElasticClient(ELASTIC_NODE),
+      TE.fromEither,
+      TE.chainFirst((client) => createIndexIfNotExists(client, INDEX_NAME)),
+      TE.chain(() =>
+        createTable(
+          getTableClient(INDEX_NAME, { allowInsecureConnection: true })(
+            STORAGE_CONN_STRING,
+          ),
+        ),
+      ),
+      TE.getOrElse((e) => {
+        throw Error(
+          `Cannot initialize integration tests - ${JSON.stringify(e.message)}`,
+        );
+      }),
+    )();
+  }, 10000);
+  
+  afterAll(async () => {
+    await pipe(
+      getElasticClient(ELASTIC_NODE),
+      TE.fromEither,
+      TE.chainFirst((client) => deleteIndex(client, INDEX_NAME)),
+      TE.chain(() => deleteTable(
         getTableClient(INDEX_NAME, { allowInsecureConnection: true })(
           STORAGE_CONN_STRING,
         ),
-      ),
-    ),
-    TE.getOrElse((e) => {
-      throw Error(
-        `Cannot initialize integration tests - ${JSON.stringify(e.message)}`,
-      );
-    }),
-  )();
-}, 10000);
-
-describe("table deduplication", () => {
+      )),
+      TE.getOrElse((e) => {
+        throw Error(
+          `Cannot destroy integration tests data - ${JSON.stringify(e.message)}`,
+        );
+      }),
+    )();
+  }, 10000);
   it("should create the document when it doesn't exists", async () => {
     await pipe(
       E.Do,

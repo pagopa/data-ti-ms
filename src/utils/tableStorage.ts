@@ -22,6 +22,11 @@ export const createTable = (
 ): TE.TaskEither<Error, void> =>
   TE.tryCatch(() => tableClient.createTable(), E.toError);
 
+export const deleteTable = (
+  tableClient: DT.TableClient
+): TE.TaskEither<Error, void> =>
+  TE.tryCatch(() => tableClient.deleteTable(), E.toError);
+
 export const getTableDocument = <T extends Record<string, unknown>>(
   tableClient: DT.TableClient,
   partitionKey: string,
