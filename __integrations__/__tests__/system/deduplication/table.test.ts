@@ -15,7 +15,7 @@ import {
 import { ELASTIC_NODE, STORAGE_CONN_STRING } from "../../../env";
 import { deleteData, deleteIndex } from "../../../utils/elasticsearch";
 
-const INDEX_NAME = "index_name";
+const INDEX_NAME = "index_name2";
 const FIRST_ID = "first_id";
 
 const currentTimestamp = Date.now();
