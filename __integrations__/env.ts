@@ -1,4 +1,7 @@
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import * as dotenv from "dotenv";
+import { pipe } from "fp-ts/lib/function";
+import * as E from "fp-ts/lib/Either";
 
 dotenv.config({ path: "./environments/.env" });
 
@@ -8,3 +11,11 @@ export const COSMOSDB_CONNECTION_STRING =
   process.env.COSMOSDB_CONNECTION_STRING ?? "COSMOSDB_CONNECTION_STRING";
 export const COSMOSDB_NAME = process.env.COSMOSDB_NAME ?? "db";
 export const ELASTIC_NODE = process.env.ELASTIC_NODE ?? "http://localhost:9200";
+export const STORAGE_CONN_STRING = pipe(
+  process.env.STORAGE_CONN_STRING,
+  NonEmptyString.decode,
+  E.getOrElse(
+    () =>
+      "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://localhost:20003/devstoreaccount1;QueueEndpoint=http://localhost:20004/devstoreaccount1;TableEndpoint=http://localhost:20005/devstoreaccount1;" as NonEmptyString,
+  ),
+);
