@@ -1,9 +1,9 @@
-name: Release
+name: Beta docker on dev branch
 
 on:
   push:
-    branches:
-      - main
+    branches-ignore:
+      - 'main'
     paths-ignore:
       - 'CODEOWNERS'
       - '**.md'
@@ -15,7 +15,7 @@ env:
 
 jobs:
   release:
-    name: Release
+    name: Beta docker on dev branch
     runs-on: ubuntu-22.04
 
     steps:
@@ -27,20 +27,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Release
-        id: release
-        uses: cycjimmy/semantic-release-action@bdd914ff2423e2792c73475f11e8da603182f32d
-        with:
-          semantic_version: 18.0.0
-          extra_plugins: |
-            @semantic-release/release-notes-generator@10.0.3
-            @semantic-release/git@10.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
 
       - name: Log in to the Container registry
-        id: docker_login
-        if: steps.release.outputs.new_release_published == 'true'
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -54,18 +44,15 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
-            type=raw,value=v${{ steps.release.outputs.new_release_version }}
+            type=raw,value=beta-${{ github.ref_name }}
           labels:
-            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+            org.opencontainers.image.title=${{ env.IMAGE_NAME }}-beta
             org.opencontainers.image.description=GitHub self hosted runner
             org.opencontainers.image.authors=PagoPA
-            org.opencontainers.image.url=github.com/PagoPA/${{ github.repository }}
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.url=github.com/pagopa/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/pagopa/${{ github.repository }}
 
       - name: Build and push Docker image
-        id: docker_build_push
-        if: steps.release.outputs.new_release_published == 'true'
         uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
