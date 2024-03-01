@@ -6,13 +6,15 @@
     "keywords": [],
     "author": "",
     "scripts": {
-        "start": "docker-compose up -d",
+        "start": "docker-compose --env-file environments/.env up -d",
         "stop": "docker-compose down",
         "build": "tsc",
         "test": "jest --runInBand"
     },
     "dependencies": {
+        "@azure/abort-controller": "^2.0.0",
         "@azure/cosmos": "^4.0.0",
+        "@azure/data-tables": "^13.2.2",
         "dotenv": "^16.3.1",
         "fp-ts": "^2.16.1"
     },
