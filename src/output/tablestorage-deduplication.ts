@@ -10,12 +10,12 @@ import {
   upsertTableDocument
 } from "../utils/tableStorage";
 import { IOutputDocument } from "./elasticsearch/elasticsearch";
-import { IOutputDeduplicationService } from "./elasticsearch/service";
+import { IOutputService } from "./elasticsearch/service";
 
 export const tableStorageDeduplication = (
   tableStorageConnectionString: NonEmptyString
 ) => (indexName: string, document: IOutputDocument) => (
-  service: IOutputDeduplicationService
+  service: IOutputService
 ): TE.TaskEither<Error, void> =>
   pipe(
     TE.Do,

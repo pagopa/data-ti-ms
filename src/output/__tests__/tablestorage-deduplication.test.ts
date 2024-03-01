@@ -5,7 +5,7 @@ import * as tableUtils from "../../utils/tableStorage";
 
 import { pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
-import { IOutputDeduplicationService } from "../elasticsearch/service";
+import { IOutputService } from "../elasticsearch/service";
 import { tableStorageDeduplication } from "../tablestorage-deduplication";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
@@ -19,7 +19,7 @@ const mockGet = jest.fn();
 const mockInsert = jest.fn().mockImplementation(() => TE.right(void 0));
 const mockUpdate = jest.fn().mockImplementation(() => TE.right(void 0));
 
-const mockService: IOutputDeduplicationService = {
+const mockService: IOutputService = {
   get: mockGet,
   insert: mockInsert,
   update: mockUpdate
