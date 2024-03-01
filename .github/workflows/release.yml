@@ -52,6 +52,7 @@ jobs:
 
           if [ -z "${RELEASE_VERSION}" ]; then
             NEW_VERSION_NAME="0.0.1"
+            OLD_VERSION=""
           else
             OLD_VERSION=$(echo "${RELEASE_VERSION}")
             
