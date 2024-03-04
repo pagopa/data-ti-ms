@@ -5,7 +5,7 @@ import * as tableUtils from "../../utils/tableStorage";
 
 import { pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
-import { IOutputDeduplicationService } from "../elasticsearch/service";
+import { IOutputService } from "../elasticsearch/service";
 import { tableStorageDeduplication } from "../tablestorage-deduplication";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
@@ -19,13 +19,12 @@ const mockGet = jest.fn();
 const mockInsert = jest.fn().mockImplementation(() => TE.right(void 0));
 const mockUpdate = jest.fn().mockImplementation(() => TE.right(void 0));
 
-const mockService: IOutputDeduplicationService = {
+const mockService: IOutputService = {
   get: mockGet,
   insert: mockInsert,
   update: mockUpdate
 };
 
-const getTableClient = jest.spyOn(tableUtils, "getTableClient");
 const getTableDocumentSpy = jest.spyOn(tableUtils, "getTableDocument");
 const upsertTableDocumentSpy = jest
   .spyOn(tableUtils, "upsertTableDocument")
@@ -37,13 +36,12 @@ describe("tableStorageDeduplication", () => {
   });
 
   it("should handle error when getting document from table", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() =>
       TE.left(new Error("Failed to get document"))
     );
 
     await pipe(
-      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(mockTableClient)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(new Error("Failed to get document"));
@@ -64,13 +62,12 @@ describe("tableStorageDeduplication", () => {
   });
 
   it("should handle error when indexing document", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
     mockInsert.mockImplementationOnce(() =>
       TE.left(new Error("Failed to index document"))
     );
     await pipe(
-      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(mockTableClient)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(new Error("Failed to index document"));
@@ -91,7 +88,6 @@ describe("tableStorageDeduplication", () => {
   });
 
   it("should handle error when updating document index", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() =>
       TE.right(O.some({ _timestamp: 1 }))
     );
@@ -100,7 +96,7 @@ describe("tableStorageDeduplication", () => {
     );
 
     await pipe(
-      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(mockTableClient)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(
@@ -123,14 +119,13 @@ describe("tableStorageDeduplication", () => {
   });
 
   it("should handle error when inserting on table storage", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
     upsertTableDocumentSpy.mockImplementationOnce(() =>
       TE.left(new Error("Failed to insert on table storage"))
     );
 
     await pipe(
-      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(mockTableClient)("testIndex", mockDocument)(mockService),
       TE.bimap(
         result => {
           expect(result).toEqual(
@@ -151,13 +146,12 @@ describe("tableStorageDeduplication", () => {
     )();
   });
   it("should index a new document and store it in table if document does not exist", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() => TE.right(O.none));
     mockInsert.mockImplementationOnce(() => TE.right(void 0));
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
-      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(mockTableClient)("testIndex", mockDocument)(mockService),
       TE.bimap(
         () => {
           throw new Error("it should not fail");
@@ -182,7 +176,6 @@ describe("tableStorageDeduplication", () => {
   });
 
   it("should update existing document in index and store it in table if existing document is older than new document", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() =>
       TE.right(O.some({ _timestamp: 1 } as Record<string, unknown>))
     );
@@ -190,7 +183,7 @@ describe("tableStorageDeduplication", () => {
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
-      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(mockTableClient)("testIndex", mockDocument)(mockService),
       TE.bimap(
         () => {
           throw new Error("it should not fail");
@@ -215,7 +208,6 @@ describe("tableStorageDeduplication", () => {
   });
 
   it("should not upsert document in index and store it in table if existing document is newer than occuring document", async () => {
-    getTableClient.mockImplementationOnce(() => () => mockTableClient);
     getTableDocumentSpy.mockImplementationOnce(() =>
       TE.right(O.some({ _timestamp: 3 }))
     );
@@ -223,7 +215,7 @@ describe("tableStorageDeduplication", () => {
     upsertTableDocumentSpy.mockImplementationOnce(() => TE.right(void 0));
 
     await pipe(
-      tableStorageDeduplication(tableStorageConnectionString)("testIndex", mockDocument)(mockService),
+      tableStorageDeduplication(mockTableClient)("testIndex", mockDocument)(mockService),
       TE.bimap(
         () => {
           throw new Error("it should not fail");

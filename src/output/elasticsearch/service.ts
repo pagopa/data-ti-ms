@@ -15,7 +15,7 @@ import {
 export type OutputClient = EL.Client;
 export type OutputDataRead = GetResponse<IOutputDocument>;
 export type OutputDataWrite = EL.estypes.Result;
-export interface IOutputDeduplicationService {
+export interface IOutputService {
   readonly get: (
     indexName: string,
     document: IOutputDocument
@@ -32,7 +32,7 @@ export interface IOutputDeduplicationService {
 
 export const getElasticSearchService = (
   connectionString: string
-): E.Either<Error, IOutputDeduplicationService> =>
+): E.Either<Error, IOutputService> =>
   pipe(
     getElasticClient(connectionString),
     E.map(client => ({

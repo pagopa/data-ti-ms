@@ -4,12 +4,12 @@ import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import { flow, pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "./elasticsearch/elasticsearch";
-import { IOutputDeduplicationService } from "./elasticsearch/service";
+import { IOutputService } from "./elasticsearch/service";
 
 export const indexerDeduplication = (
   indexName: string,
   document: IOutputDocument
-) => (service: IOutputDeduplicationService): TE.TaskEither<Error, void> =>
+) => (service: IOutputService): TE.TaskEither<Error, void> =>
   pipe(
     service.get(indexName, document),
     TE.map(O.some),

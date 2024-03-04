@@ -1,14 +1,14 @@
 import * as TE from "fp-ts/TaskEither";
 import { constVoid, pipe } from "fp-ts/lib/function";
 import { IOutputDocument } from "../elasticsearch/elasticsearch";
-import { IOutputDeduplicationService } from "../elasticsearch/service";
+import { IOutputService } from "../elasticsearch/service";
 import { indexerDeduplication } from "../indexer-deduplication";
 
 const mockGet = jest.fn();
 const mockInsert = jest.fn();
 const mockUpdate = jest.fn();
 
-const mockService: IOutputDeduplicationService = {
+const mockService: IOutputService = {
   get: mockGet,
   insert: mockInsert,
   update: mockUpdate

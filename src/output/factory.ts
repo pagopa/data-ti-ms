@@ -15,10 +15,21 @@ export const IndexerDeduplicationStrategyConfig = t.type({
   type: t.literal(DeduplicationStrategyType.Indexer)
 });
 
-export const TableDeduplicationStrategyConfig = t.type({
-  storageConnectionString: NonEmptyString,
-  type: t.literal(DeduplicationStrategyType.TableStorage)
-});
+export const TableDeduplicationStrategyConfig = t.intersection([
+  t.type({
+    storageConnectionString: NonEmptyString,
+    tableName: NonEmptyString,
+    type: t.literal(DeduplicationStrategyType.TableStorage)
+  }),
+  t.partial({
+    opts: t.type({
+      allowInsecureConnection: t.boolean
+    })
+  })
+]);
+export type TableDeduplicationStrategyConfig = t.TypeOf<
+  typeof TableDeduplicationStrategyConfig
+>;
 
 export const DeduplicationStrategyConfig = t.union([
   TableDeduplicationStrategyConfig,
@@ -35,7 +46,7 @@ export const getDeduplicationStrategy = (
     case DeduplicationStrategyType.Indexer:
       return indexerDeduplicationStrategy;
     case DeduplicationStrategyType.TableStorage:
-      return tableStorageDeduplicationStrategy(config.storageConnectionString);
+      return tableStorageDeduplicationStrategy(config);
     default:
       throw new Error("Strategy not supported");
   }

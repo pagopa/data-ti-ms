@@ -7,6 +7,9 @@ import {
   indexerDeduplicationStrategy, tableStorageDeduplicationStrategy
 } from "../service";
 
+import * as TU from "../../utils/tableStorage";
+import { TableClient } from "@azure/data-tables";
+
 describe("getDeduplicationStrategy", () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -28,9 +31,11 @@ describe("getDeduplicationStrategy", () => {
   });
 
   it("should return tablestorage deduplication strategy", () => {
+    jest.spyOn(TU, "getTableClient").mockImplementation(() => () => ({}) as TableClient);
     const strategyType = DeduplicationStrategyType.TableStorage;
     const strategy = getDeduplicationStrategy({
       type: strategyType,
+      tableName: "tableName" as NonEmptyString,
       storageConnectionString: "foo" as NonEmptyString
     });
     expect(strategy).toBeDefined();
