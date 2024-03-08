@@ -1,9 +1,12 @@
 import * as O from "fp-ts/Option";
+import * as E from "fp-ts/Either";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 import { pipe } from "fp-ts/lib/function";
 import { toJsonObject } from "../utils/data";
 
-export const flattenField = <T>(input: T, fieldToFlat: keyof T): T =>
+export const flattenField = <T extends Record<string, unknown>>(
+  fieldToFlat: keyof T
+) => (input: T): E.Either<Error, T> =>
   pipe(
     input,
     O.fromPredicate(stream => stream[fieldToFlat] instanceof Object),
@@ -33,5 +36,6 @@ export const flattenField = <T>(input: T, fieldToFlat: keyof T): T =>
           })
       )
     ),
-    O.getOrElse(() => input)
+    O.getOrElse(() => input),
+    E.right
   );

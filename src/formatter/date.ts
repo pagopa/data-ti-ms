@@ -90,9 +90,8 @@ const interpolateDateString = (
   }
 };
 
-export const convertFormat = (
-  isoString: string,
-  output: OutputFormat
+export const convertFormat = (output: OutputFormat) => (
+  isoString: string
 ): E.Either<Error, string> =>
   pipe(
     output,
