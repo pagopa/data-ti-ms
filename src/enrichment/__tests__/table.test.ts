@@ -17,7 +17,7 @@ const tableClientMock = {} as any;
 describe("tableEnrich", () => {
   it("should raise an error if input Key Fields are not strings", async () => {
     await pipe(
-      tableEnrich(input, tableClientMock, "foo", "bar"),
+      tableEnrich(tableClientMock, "foo", "bar")(input),
       TE.bimap(
         err => {
           expect(err).toBeDefined();
@@ -37,7 +37,7 @@ describe("tableEnrich", () => {
       TE.left(Error("Table unreachable"))
     );
     await pipe(
-      tableEnrich(input, tableClientMock, "partitionKey", "partitionKey"),
+      tableEnrich(tableClientMock, "partitionKey", "partitionKey")(input),
       TE.bimap(
         err => {
           expect(err).toBeDefined();
@@ -51,7 +51,7 @@ describe("tableEnrich", () => {
   it("should return unmodified input if table document is missing", async () => {
     getTableDocumentMock.mockImplementationOnce(() => TE.right(O.none));
     await pipe(
-      tableEnrich(input, tableClientMock, "partitionKey", "rowKey"),
+      tableEnrich(tableClientMock, "partitionKey", "rowKey")(input),
       TE.bimap(
         () => fail("it should not fail"),
         result => expect(result).toEqual(input)
@@ -64,7 +64,7 @@ describe("tableEnrich", () => {
       TE.right(O.some({ baz: "baz" }))
     );
     await pipe(
-      tableEnrich(input, tableClientMock, "partitionKey", "rowKey"),
+      tableEnrich(tableClientMock, "partitionKey", "rowKey")(input),
       TE.bimap(
         () => fail("it should not fail"),
         result => expect(result).toEqual({ ...input, baz: "baz" })
@@ -78,12 +78,11 @@ describe("tableEnrich", () => {
     );
     await pipe(
       tableEnrich(
-        input,
         tableClientMock,
         "partitionKey",
         "rowKey",
         "enrichedField"
-      ),
+      )(input),
       TE.bimap(
         () => fail("it should not fail"),
         result =>
@@ -97,7 +96,7 @@ describe("tableEnrich", () => {
       TE.right(O.some({ baz: "baz" }))
     );
     await pipe(
-      tableEnrich(input, tableClientMock, "partitionKey", "rowKey"),
+      tableEnrich(tableClientMock, "partitionKey", "rowKey")(input),
       TE.bimap(
         () => fail("it should not fail"),
         result => expect(result).toEqual({ ...input, baz: "baz" })

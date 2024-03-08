@@ -18,9 +18,9 @@ export const capitalizeFormat = (s: string): E.Either<Error, string> =>
       pipe(
         strArr,
         AR.head,
-        O.map(upperCaseFormat),
+        O.map(str => str.toUpperCase()),
         O.map(firstLetter => `${firstLetter}${strArr.join("").slice(1)}`),
-        O.getOrElse(() => ""),
+        O.getOrElseW(() => ""),
         E.right
       )
     )

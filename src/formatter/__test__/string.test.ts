@@ -37,7 +37,7 @@ describe("CapitalizeFormat", () => {
   it("should capitalize a string", () => {
     const res = capitalizeFormat(aString);
     expect(res).toEqual(
-      E.right(`${aString[0].toUpperCase() + aString.slice(1)}`)
+      E.right(`${aString.charAt(0).toUpperCase()}${aString.slice(1)}`)
     );
   });
 

@@ -8,15 +8,13 @@ import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { flattenField } from "../formatter/flatten";
 import { getBlobDocument } from "../utils/blobStorage";
-import { NotInKeys } from "../utils/types";
 import { toJsonObject } from "../utils/data";
 
-export const blobEnrich = <T, K extends string>(
-  input: T,
+export const blobEnrich = <T extends Record<string, unknown>>(
   blobContainerClient: BS.ContainerClient,
   blobNameField: keyof T,
-  outputFieldName?: NotInKeys<T, K>
-): TE.TaskEither<Error, T> =>
+  outputFieldName?: string
+) => (input: T): TE.TaskEither<Error, T> =>
   pipe(
     input[blobNameField],
     NonEmptyString.decode,
@@ -36,20 +34,20 @@ export const blobEnrich = <T, K extends string>(
           pipe(
             outputFieldName,
             O.fromNullable,
-            O.map(fieldName => ({ ...input, [fieldName]: blobDocumentObject })),
+            O.map(fieldName =>
+              E.right({ ...input, [fieldName]: blobDocumentObject })
+            ),
             O.getOrElseW(() =>
               pipe(`${String(blobNameField)}_enrich`, flattenFieldName =>
-                flattenField(
-                  {
-                    ...input,
-                    [flattenFieldName]: blobDocumentObject
-                  },
-                  flattenFieldName
-                )
+                flattenField(flattenFieldName)({
+                  ...input,
+                  [flattenFieldName]: blobDocumentObject
+                })
               )
             )
           )
         ),
+        O.chain(O.fromEither),
         O.getOrElse(() => input)
       )
     )
