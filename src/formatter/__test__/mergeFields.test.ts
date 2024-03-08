@@ -1,3 +1,4 @@
+import * as E from "fp-ts/Either";
 import { mergeFields } from "../mergeFields";
 
 const inputData = {
@@ -8,35 +9,40 @@ const inputData = {
 
 describe("mergeFields", () => {
   it("should merge fields into a new field", () => {
-    const res = mergeFields(inputData, ["foo", "bar"], "mergedField", "-");
-    expect(res).toEqual({
-      bar: 1,
-      baz: "hello",
-      foo: "Foo",
-      mergedField: "Foo-1"
-    });
+    const res = mergeFields(["foo", "bar"], "mergedField", "-")(inputData);
+    expect(res).toEqual(
+      E.right({
+        bar: 1,
+        baz: "hello",
+        foo: "Foo",
+        mergedField: "Foo-1"
+      })
+    );
   });
   it("should output an empty string if no fields are provided", () => {
-    const res = mergeFields(inputData, [], "mergedField", "-");
-    expect(res).toEqual({
-      bar: 1,
-      baz: "hello",
-      foo: "Foo",
-      mergedField: ""
-    });
+    const res = mergeFields([], "mergedField", "-")(inputData);
+    expect(res).toEqual(
+      E.right({
+        bar: 1,
+        baz: "hello",
+        foo: "Foo",
+        mergedField: ""
+      })
+    );
   });
   it("should output an empty string if a missing field is provided", () => {
     const res = mergeFields(
-      inputData,
       ["bas" as keyof typeof inputData],
       "mergedField",
       "-"
+    )(inputData);
+    expect(res).toEqual(
+      E.right({
+        bar: 1,
+        baz: "hello",
+        foo: "Foo",
+        mergedField: ""
+      })
     );
-    expect(res).toEqual({
-      bar: 1,
-      baz: "hello",
-      foo: "Foo",
-      mergedField: ""
-    });
   });
 });

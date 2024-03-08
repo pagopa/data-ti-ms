@@ -1,70 +1,44 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import {
-  BooleanMapping,
   Configuration,
-  ConvertFormatMapping,
   DataMapping,
-  DivideMapping,
-  MultiplyMapping,
-  ReplaceAllMapping,
-  ReplaceMapping,
-  RoundMapping
+  ExcludeInputMapping,
+  MultipleInputMapping,
+  SelectInputMapping
 } from "@pagopa/data-indexer-commons";
 import { SingleInputMapping } from "@pagopa/data-indexer-commons/lib/types/mapping/singleInput";
 
-import { SwitchCaseMapping } from "@pagopa/data-indexer-commons/lib/types/mapping/case";
-
 import { flow, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
+import * as E from "fp-ts/lib/Either";
 import * as RA from "fp-ts/lib/ReadonlyArray";
+import * as AR from "fp-ts/lib/Array";
 import { MappingFormatter } from "../formatter/types";
-import { replaceFormat, trimFormat } from "../formatter/string";
-import { booleanToString } from "../formatter/boolean";
-import { divideNumber, multiplyNumber, roundNumber } from "../formatter/number";
 import { applySingleInput } from "../formatter/apply";
 import {
-  capitalizeFormat,
-  lowerCaseFormat,
-  upperCaseFormat,
-  replaceAllFormat
-} from "../formatter/string";
-import { switchCaseFormat } from "../formatter/case";
-import {
-  convertFormat,
-  dateStringFromTimestampFormat,
-  dateStringToIsoFormat,
-  dateStringToTimeStampFormat,
-  dateStringToUtcFormat,
-  isoToUtcFormat
-} from "../formatter/date";
-import { flattenField } from "../formatter/flatten";
+  IFormatterMapping,
+  excludeInputFormatterHandlerMappings,
+  multipleInputFormatterHandlerMappings,
+  selectInputFormatterHandlerMappings,
+  singleInputFormatterHandlerMappings
+} from "./mappings";
 
-const getHandler = (applier: ReturnType<typeof applySingleInput>) => ({
-  BOOLEAN_TO_STRING: (m: BooleanMapping) =>
-    applier(booleanToString(m.trueString, m.falseString)),
-  CAPITALIZE: () => applier(capitalizeFormat),
-  CONVERT_FORMAT: (m: ConvertFormatMapping) => applier(convertFormat(m.output)),
-  DATE_FROM_TIMESTAMP: () => applier(dateStringFromTimestampFormat),
-  DATE_TO_ISO: () => applier(dateStringToIsoFormat),
-  DATE_TO_TIMESTAMP: () => applier(dateStringToTimeStampFormat),
-  DATE_TO_UTC: () => applier(dateStringToUtcFormat),
-  DIVIDE_NUMBER: (m: DivideMapping) => applier(divideNumber(m.divider)),
-  FLATTEN: (m: SingleInputMapping) => flattenField(m.inputFieldName),
-  ISO_TO_UTC: () => applier(isoToUtcFormat),
-  LOWER_CASE: () => applier(lowerCaseFormat),
-  MULTIPLY_NUMBER: (m: MultiplyMapping) =>
-    applier(multiplyNumber(m.multiplier)),
-  REPLACE: (m: ReplaceMapping) =>
-    applier(replaceFormat(m.toBeReplaced, m.placeholder)),
-  REPLACE_ALL: (m: ReplaceAllMapping) =>
-    applier(replaceAllFormat(m.toBeReplaced, m.placeholder)),
-  ROUND_NUMBER: (m: RoundMapping) => applier(roundNumber(m.decimals)),
-  SWITCH_CASE: (m: SwitchCaseMapping) =>
-    applier(switchCaseFormat(m.cases, m.defaultValue)),
-  TRIM: () => applier(trimFormat),
-  UPPER_CASE: () => applier(upperCaseFormat)
-});
-export const mapperHandler = <T extends Record<string, unknown>>(
+const getHandler = <T>(
+  arr: ReadonlyArray<IFormatterMapping<T>>,
+  dataMapping: DataMapping
+): MappingFormatter<T, unknown> =>
+  pipe(
+    arr,
+    AR.map(mapping =>
+      pipe(dataMapping, mapping.pattern.decode, E.map(mapping.handler))
+    ),
+    AR.rights,
+    AR.head,
+    O.getOrElse(() => {
+      throw Error("Not mapped!");
+    })
+  );
+
+export const getSingleInputHandler = <T extends Record<string, unknown>>(
   singleInputMapping: SingleInputMapping
 ): MappingFormatter<T, unknown> =>
   pipe(
@@ -72,8 +46,29 @@ export const mapperHandler = <T extends Record<string, unknown>>(
       singleInputMapping.inputFieldName,
       singleInputMapping.outputFieldName
     ),
-    applier => getHandler(applier),
-    mapping => mapping[singleInputMapping.mapper](singleInputMapping)
+    singleInputFormatterHandlerMappings,
+    mappingArr => getHandler(mappingArr, singleInputMapping)
+  );
+
+export const getMultipleInputHandler = <T extends Record<string, unknown>>(
+  multipleInputMapping: MultipleInputMapping
+): MappingFormatter<T, unknown> =>
+  pipe(multipleInputFormatterHandlerMappings(), mappingArr =>
+    getHandler(mappingArr, multipleInputMapping)
+  );
+
+export const getSelectInputHandler = <T extends Record<string, unknown>>(
+  selectInputMapping: SelectInputMapping
+): MappingFormatter<T, unknown> =>
+  pipe(selectInputFormatterHandlerMappings(), mappingArr =>
+    getHandler(mappingArr, selectInputMapping)
+  );
+
+export const getExcludeInputHandler = <T extends Record<string, unknown>>(
+  excludeInputMapping: ExcludeInputMapping
+): MappingFormatter<T, unknown> =>
+  pipe(excludeInputFormatterHandlerMappings(), mappingArr =>
+    getHandler(mappingArr, excludeInputMapping)
   );
 
 export const mapFormatting = <T extends Record<string, unknown>>(
@@ -81,10 +76,13 @@ export const mapFormatting = <T extends Record<string, unknown>>(
 ): MappingFormatter<T, unknown> => {
   switch (mapping.type) {
     case "SINGLE_INPUT":
-      return mapperHandler(mapping);
+      return getSingleInputHandler(mapping);
     case "MULTIPLE_INPUT":
+      return getMultipleInputHandler(mapping);
     case "SELECT_INPUT":
+      return getSelectInputHandler(mapping);
     case "EXCLUDE_INPUT":
+      return getExcludeInputHandler(mapping);
     default:
       throw Error("Not mapped!");
   }
