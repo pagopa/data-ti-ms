@@ -6,15 +6,15 @@ import * as BS from "@azure/storage-blob";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { flattenField } from "../formatter/flatten";
-import { getBlobDocument } from "../utils/blobStorage";
-import { toJsonObject } from "../utils/data";
+import { flattenField } from "../../formatter/flatten";
+import { getBlobDocument } from "../../utils/blobStorage";
+import { toJsonObject } from "../../utils/data";
 
 export const blobEnrich = <T extends Record<string, unknown>>(
-  blobContainerClient: BS.ContainerClient,
-  blobNameField: keyof T,
-  outputFieldName?: string
-) => (input: T): TE.TaskEither<Error, T> =>
+  blobContainerClient: BS.ContainerClient
+) => (blobNameField: keyof T, outputFieldName?: string) => (
+  input: T
+): TE.TaskEither<Error, T> =>
   pipe(
     input[blobNameField],
     NonEmptyString.decode,

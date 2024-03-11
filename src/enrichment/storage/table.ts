@@ -6,8 +6,8 @@ import * as DT from "@azure/data-tables";
 import * as t from "io-ts";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
-import { flattenField } from "../formatter/flatten";
-import { getTableDocument } from "../utils/tableStorage";
+import { flattenField } from "../../formatter/flatten";
+import { getTableDocument } from "../../utils/tableStorage";
 
 export const InputKeyFields = t.type({
   partitionKey: NonEmptyString,
@@ -17,7 +17,8 @@ export const InputKeyFields = t.type({
 export type InputKeyFields = t.TypeOf<typeof InputKeyFields>;
 
 export const tableEnrich = <T extends Record<string, unknown>>(
-  tableClient: DT.TableClient,
+  tableClient: DT.TableClient
+) => (
   partitionKeyField: keyof T,
   rowKeyField: keyof T,
   outputFieldName?: string
