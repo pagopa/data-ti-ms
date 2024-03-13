@@ -26,10 +26,10 @@ const filterHandlerMap: Record<
   neq: (input, compare) => E.right(input !== compare)
 };
 
-export const filterStaric = <
+export const filterStatic = <
   T extends Record<string, unknown>,
   R extends keyof T,
-  K extends never | unknown
+  K
 >(
   inputFieldName: R,
   condition: keyof typeof filterHandlerMap,
@@ -38,7 +38,7 @@ export const filterStaric = <
   pipe(
     { condition, fieldName: inputFieldName, staticValue },
     DataFilter.decode,
-    E.mapLeft(errors => new Error(errors.map(e => e.message).join("\n"))),
+    E.mapLeft(() => new Error("Wrong Filter Definition")),
     E.chain(_ =>
       pipe(
         input[inputFieldName],
