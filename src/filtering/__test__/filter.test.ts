@@ -36,17 +36,13 @@ describe("filter", () => {
     });
     it("should return left for staticCompare on wrong Filter Definition (eq with no staticValue)", () => {
       const res = filterStatic("bar", "eq")(inputData);
-      expect(res).toEqual(E.right(false));
+      expect(E.isLeft(res)).toBeTruthy();
     });
   });
   describe("filterDynamic", () => {
     it("should return true for dynamicCompare", () => {
       const res = filterDynamic("bar", "eq", "foo")(inputData);
       expect(res).toEqual(E.right(false));
-    });
-    it("should return left for dynamicCompare on wrong Filter Definition (isNull)", () => {
-      const res = filterDynamic("bar", "isNull", "bar")(inputData);
-      expect(E.isLeft(res)).toBeTruthy();
     });
     it("should return left for dynamicCompare on unavailable fields", () => {
       const res = filterDynamic("undef", "eq", "bar")(inputData);

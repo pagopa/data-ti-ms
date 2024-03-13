@@ -31,17 +31,17 @@ export const filterStatic = <
   R extends keyof T,
   K
 >(
-  inputFieldName: R,
+  fieldName: R,
   condition: keyof typeof filterHandlerMap,
   staticValue?: K
 ) => (input: T): E.Either<Error, boolean> =>
   pipe(
-    { condition, fieldName: inputFieldName, staticValue },
+    { condition, fieldName, staticValue },
     DataFilter.decode,
     E.mapLeft(() => new Error("Wrong Filter Definition")),
     E.chain(_ =>
       pipe(
-        input[inputFieldName],
+        input[fieldName],
         withField,
         E.chain(value => filterHandlerMap[condition](value, staticValue))
       )
@@ -53,25 +53,25 @@ export const filterDynamic = <
   R extends keyof T,
   K extends keyof T
 >(
-  inputFieldName: R,
+  fieldName: R,
   condition: keyof typeof filterHandlerMap,
-  compareFieldName: K
+  compareField: K
 ) => (input: T): E.Either<Error, boolean> =>
   pipe(
     {
-      compareField: compareFieldName,
+      compareField,
       condition,
-      fieldName: inputFieldName
+      fieldName
     },
     DataFilter.decode,
     E.mapLeft(errors => new Error(errors.map(e => e.message).join("\n"))),
     E.chain(_ =>
       pipe(
-        input[inputFieldName],
+        input[fieldName],
         withField,
         E.chain(value =>
           pipe(
-            input[compareFieldName],
+            input[compareField],
             withField,
             E.chain(compare => filterHandlerMap[condition](value, compare))
           )
