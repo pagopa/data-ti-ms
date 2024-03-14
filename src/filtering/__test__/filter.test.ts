@@ -52,6 +52,10 @@ describe("filter", () => {
       const res = filterDynamic("bar", "eq", "undef")(inputData);
       expect(E.isLeft(res)).toBeTruthy();
     });
+    it("should return left for dynamicCompare on wrong Filter Definition (isNull)", () => {
+      const res = filterDynamic("bar", "isNull", "undef")(inputData);
+      expect(E.isLeft(res)).toBeTruthy();
+    });
     it("should return E.right(false) for dynamicCompare on identity compare for 'gt' compare", () => {
       const res = filterDynamic("bar", "gt", "bar")(inputData);
       expect(res).toEqual(E.right(false));
