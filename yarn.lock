@@ -1393,10 +1393,10 @@
     danger-plugin-yarn "^1.2.1"
     pivotaljs "^1.0.3"
 
-"@pagopa/data-indexer-commons@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@pagopa/data-indexer-commons/-/data-indexer-commons-0.2.0.tgz#248091e86a109687c28693812f24454f549fb9f7"
-  integrity sha512-TaEaJMbbdkByOYFNof2HYvdEnJ0uOPzp85EwQvghtboRDMWFdbgttMorT0/jYjlRXYG44ONWZwPYYj99TPpmNw==
+"@pagopa/data-indexer-commons@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@pagopa/data-indexer-commons/-/data-indexer-commons-0.3.1.tgz#6236ad64ea762d0475faa631ea83419e41731d08"
+  integrity sha512-a4tf+xKvXdwKRR2SCSKHkZmy7gbXWUsZ2vExaP15AEokZN8ht5W4o88+W5As8wfJD6MEYZAg036x/0s1BbCc7A==
   dependencies:
     "@pagopa/ts-commons" "^12.4.1"
     fp-ts "^2.16.1"
