@@ -22,7 +22,7 @@ export const tableEnrich = <T extends Record<string, unknown>>(
   partitionKeyField: keyof T,
   rowKeyField: keyof T,
   outputFieldName?: string
-) => (input: T): TE.TaskEither<Error, T> =>
+) => (input: T): TE.TaskEither<Error, O.Option<Record<string, unknown>>> =>
   pipe(
     { partitionKey: input[partitionKeyField], rowKey: input[rowKeyField] },
     InputKeyFields.decode,
@@ -58,8 +58,7 @@ export const tableEnrich = <T extends Record<string, unknown>>(
             )
           )
         ),
-        O.chain(O.fromEither),
-        O.getOrElse(() => input)
+        O.chain(O.fromEither)
       )
     )
   );

@@ -1,14 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable sonarjs/no-duplicate-string */
 /* eslint-disable extra-rules/no-commented-out-code */
 import { CosmosClient, Items } from "@azure/cosmos";
 import * as E from "fp-ts/Either";
 import * as O from "fp-ts/Option";
 import { findByKey, findLastVersionByKey, getQuery } from "../utils";
+import {
+  IKeyQueryEnrichmentParams,
+  IVersionedQueryEnrichmentParams
+} from "../../../../utils/types";
 const containerName = "containerId";
 const databaseName = "dbId";
-const itemId = "itemId";
-const partitionKey = "partitionKey";
-const partitionKeyValue = "partitionKeyValue";
+const idFieldValue = "itemId";
+const partitionKeyFieldValue = "partitionKeyValue";
+const partitionKeyFieldName = "partitionKeyName";
 const itemReadMock = jest.fn().mockResolvedValue({ resource: { id: "id" } });
 
 const itemFetchAll = jest.fn().mockResolvedValue({ resources: [{ id: "id" }] });
@@ -36,22 +41,24 @@ const mockClient: CosmosClient = ({
   database: mockDatabase
 } as unknown) as CosmosClient;
 
+const findByKeyParams: IKeyQueryEnrichmentParams<Record<string, unknown>> = {
+  containerName,
+  databaseName,
+  idFieldValue,
+  partitionKeyFieldValue
+};
+
 describe("findByKey", () => {
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
   });
   it("should return Some(unknown) when the item is found", async () => {
-    const resultPartitionKey = await findByKey(mockClient)(
-      databaseName,
-      containerName,
-      itemId,
-      partitionKey
-    )();
+    const resultPartitionKey = await findByKey(mockClient)(findByKeyParams)();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(mockItem).toHaveBeenCalledWith(itemId, partitionKey);
+    expect(mockItem).toHaveBeenCalledWith(idFieldValue, partitionKeyFieldValue);
     expect(resultPartitionKey).toEqual(E.right(O.some({ id: "id" })));
   });
 
@@ -60,18 +67,13 @@ describe("findByKey", () => {
       throw Error("Error while getting database");
     });
 
-    const result = await findByKey(mockClient)(
-      databaseName,
-      containerName,
-      itemId,
-      partitionKey
-    )();
+    const result = await findByKey(mockClient)(findByKeyParams)();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(result).toEqual(
       E.left(
         new Error(
-          `Impossible to get item ${itemId} from container ${containerName}`
+          `Impossible to get item ${idFieldValue} from container ${containerName}`
         )
       )
     );
@@ -80,19 +82,14 @@ describe("findByKey", () => {
       throw Error("Error while getting container");
     });
 
-    const resultContainer = await findByKey(mockClient)(
-      databaseName,
-      containerName,
-      itemId,
-      partitionKey
-    )();
+    const resultContainer = await findByKey(mockClient)(findByKeyParams)();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
     expect(resultContainer).toEqual(
       E.left(
         new Error(
-          `Impossible to get item ${itemId} from container ${containerName}`
+          `Impossible to get item ${idFieldValue} from container ${containerName}`
         )
       )
     );
@@ -101,21 +98,16 @@ describe("findByKey", () => {
       throw Error("Error while getting container");
     });
 
-    const itemContainer = await findByKey(mockClient)(
-      databaseName,
-      containerName,
-      itemId,
-      partitionKey
-    )();
+    const itemContainer = await findByKey(mockClient)(findByKeyParams)();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(mockItem).toHaveBeenCalledWith(itemId, partitionKey);
+    expect(mockItem).toHaveBeenCalledWith(idFieldValue, partitionKeyFieldValue);
 
     expect(itemContainer).toEqual(
       E.left(
         new Error(
-          `Impossible to get item ${itemId} from container ${containerName}`
+          `Impossible to get item ${idFieldValue} from container ${containerName}`
         )
       )
     );
@@ -127,16 +119,11 @@ describe("findByKey", () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         undefined
     });
-    const result = await findByKey(mockClient)(
-      databaseName,
-      containerName,
-      itemId,
-      partitionKey
-    )();
+    const result = await findByKey(mockClient)(findByKeyParams)();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(mockItem).toHaveBeenCalledWith(itemId, partitionKey);
+    expect(mockItem).toHaveBeenCalledWith(idFieldValue, partitionKeyFieldValue);
     expect(result).toEqual(E.right(O.none));
 
     itemReadMock.mockResolvedValueOnce({
@@ -145,22 +132,27 @@ describe("findByKey", () => {
         undefined
     });
 
-    const resultPartitionKey = await findByKey(mockClient)(
-      databaseName,
-      containerName,
-      itemId,
-      partitionKey
-    )();
+    const resultPartitionKey = await findByKey(mockClient)(findByKeyParams)();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(mockContainer).toHaveBeenCalledWith(containerName);
-    expect(mockItem).toHaveBeenCalledWith(itemId, partitionKey);
+    expect(mockItem).toHaveBeenCalledWith(idFieldValue, partitionKeyFieldValue);
     expect(resultPartitionKey).toEqual(E.right(O.none));
   });
 });
 
 const versionFieldName = "versionFieldName";
-const versionFieldValue = "versionFieldValue";
+const findLastVersionParams: IVersionedQueryEnrichmentParams<Record<
+  string,
+  unknown
+>> = {
+  containerName,
+  databaseName,
+  idFieldValue,
+  partitionKeyFieldName,
+  partitionKeyFieldValue,
+  versionFieldName
+};
 
 describe("findLastVersionByKey", () => {
   beforeEach(() => {
@@ -170,13 +162,7 @@ describe("findLastVersionByKey", () => {
 
   it("should return Some(unknown) when the item is found", async () => {
     const resultPartitionKey = await findLastVersionByKey(mockClient)(
-      databaseName,
-      containerName,
-      versionFieldName,
-      versionFieldValue,
-      itemId,
-      partitionKey,
-      partitionKeyValue
+      findLastVersionParams
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -184,11 +170,10 @@ describe("findLastVersionByKey", () => {
     expect(itemQueryMock).toHaveBeenCalledWith(
       getQuery(
         containerName,
-        itemId,
+        idFieldValue,
         versionFieldName,
-        versionFieldValue,
-        partitionKey,
-        partitionKeyValue
+        partitionKeyFieldName,
+        partitionKeyFieldValue
       )
     );
     expect(resultPartitionKey).toEqual(E.right(O.some({ id: "id" })));
@@ -200,20 +185,14 @@ describe("findLastVersionByKey", () => {
     });
 
     const result = await findLastVersionByKey(mockClient)(
-      databaseName,
-      containerName,
-      versionFieldName,
-      versionFieldValue,
-      itemId,
-      partitionKey,
-      partitionKeyValue
+      findLastVersionParams
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
     expect(result).toEqual(
       E.left(
         new Error(
-          `Impossible to get last version of the item ${itemId} from container ${containerName}`
+          `Impossible to get last version of the item ${idFieldValue} from container ${containerName}`
         )
       )
     );
@@ -223,13 +202,7 @@ describe("findLastVersionByKey", () => {
     });
 
     const resultContainer = await findLastVersionByKey(mockClient)(
-      databaseName,
-      containerName,
-      versionFieldName,
-      versionFieldValue,
-      itemId,
-      partitionKey,
-      partitionKeyValue
+      findLastVersionParams
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -237,7 +210,7 @@ describe("findLastVersionByKey", () => {
     expect(resultContainer).toEqual(
       E.left(
         new Error(
-          `Impossible to get last version of the item ${itemId} from container ${containerName}`
+          `Impossible to get last version of the item ${idFieldValue} from container ${containerName}`
         )
       )
     );
@@ -247,13 +220,7 @@ describe("findLastVersionByKey", () => {
     });
 
     const itemContainer = await findLastVersionByKey(mockClient)(
-      databaseName,
-      containerName,
-      versionFieldName,
-      versionFieldValue,
-      itemId,
-      partitionKey,
-      partitionKeyValue
+      findLastVersionParams
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -261,18 +228,17 @@ describe("findLastVersionByKey", () => {
     expect(itemQueryMock).toHaveBeenCalledWith(
       getQuery(
         containerName,
-        itemId,
+        idFieldValue,
         versionFieldName,
-        versionFieldValue,
-        partitionKey,
-        partitionKeyValue
+        partitionKeyFieldName,
+        partitionKeyFieldValue
       )
     );
 
     expect(itemContainer).toEqual(
       E.left(
         new Error(
-          `Impossible to get last version of the item ${itemId} from container ${containerName}`
+          `Impossible to get last version of the item ${idFieldValue} from container ${containerName}`
         )
       )
     );
@@ -284,13 +250,7 @@ describe("findLastVersionByKey", () => {
     });
 
     const result = await findLastVersionByKey(mockClient)(
-      databaseName,
-      containerName,
-      versionFieldName,
-      versionFieldValue,
-      itemId,
-      partitionKey,
-      partitionKeyValue
+      findLastVersionParams
     )();
 
     expect(mockDatabase).toHaveBeenCalledWith(databaseName);
@@ -298,11 +258,10 @@ describe("findLastVersionByKey", () => {
     expect(itemQueryMock).toHaveBeenCalledWith(
       getQuery(
         containerName,
-        itemId,
+        idFieldValue,
         versionFieldName,
-        versionFieldValue,
-        partitionKey,
-        partitionKeyValue
+        partitionKeyFieldName,
+        partitionKeyFieldValue
       )
     );
     expect(result).toEqual(E.right(O.none));

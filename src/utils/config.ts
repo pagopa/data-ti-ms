@@ -6,7 +6,10 @@ import {
   SelectInputMapping
 } from "@pagopa/data-indexer-commons";
 import { SingleInputMapping } from "@pagopa/data-indexer-commons/lib/types/mapping/singleInput";
-import { EnrichmentDataSource } from "@pagopa/data-indexer-commons/lib/types/enrichment/enrichment";
+import {
+  DocumentModelVersionedQuery,
+  EnrichmentDataSource
+} from "@pagopa/data-indexer-commons/lib/types/enrichment/enrichment";
 
 import { flow, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
@@ -17,8 +20,12 @@ import {
   createBlobStorageEnrichmentService,
   createTableStorageEnrichmentService
 } from "../enrichment/storage/service";
-import { MappingEnrichment, MappingFormatter } from "../formatter/types";
 import { applySingleInput } from "../formatter/apply";
+import { createCosmosQueryEnrichmentService } from "../enrichment/query/cosmos/service";
+import {
+  applyFindByKeyQueryEnrichment,
+  applyVersionedQueryEnrichment
+} from "../enrichment/apply";
 import {
   IFormatterMapping,
   excludeInputFormatterHandlerMappings,
@@ -26,6 +33,7 @@ import {
   selectInputFormatterHandlerMappings,
   singleInputFormatterHandlerMappings
 } from "./mappings";
+import { EnrichmentApplier, MappingFormatter } from "./types";
 
 const NOT_MAPPED_ERROR = "Not Mapped!";
 const NOT_IMPLEMENTED_ERROR = "Not Implemented!";
@@ -33,7 +41,7 @@ const NOT_IMPLEMENTED_ERROR = "Not Implemented!";
 const getHandler = <T>(
   arr: ReadonlyArray<IFormatterMapping<T>>,
   dataMapping: DataMapping
-): MappingFormatter<T, unknown> =>
+): MappingFormatter<T, Record<string, unknown>> =>
   pipe(
     arr,
     AR.map(mapping =>
@@ -48,7 +56,7 @@ const getHandler = <T>(
 
 export const getSingleInputHandler = <T extends Record<string, unknown>>(
   singleInputMapping: SingleInputMapping
-): MappingFormatter<T, unknown> =>
+): MappingFormatter<T, Record<string, unknown>> =>
   pipe(
     applySingleInput(
       singleInputMapping.inputFieldName,
@@ -60,28 +68,28 @@ export const getSingleInputHandler = <T extends Record<string, unknown>>(
 
 export const getMultipleInputHandler = <T extends Record<string, unknown>>(
   multipleInputMapping: MultipleInputMapping
-): MappingFormatter<T, unknown> =>
+): MappingFormatter<T, Record<string, unknown>> =>
   pipe(multipleInputFormatterHandlerMappings(), mappingArr =>
     getHandler(mappingArr, multipleInputMapping)
   );
 
 export const getSelectInputHandler = <T extends Record<string, unknown>>(
   selectInputMapping: SelectInputMapping
-): MappingFormatter<T, unknown> =>
+): MappingFormatter<T, Record<string, unknown>> =>
   pipe(selectInputFormatterHandlerMappings(), mappingArr =>
     getHandler(mappingArr, selectInputMapping)
   );
 
 export const getExcludeInputHandler = <T extends Record<string, unknown>>(
   excludeInputMapping: ExcludeInputMapping
-): MappingFormatter<T, unknown> =>
+): MappingFormatter<T, Record<string, unknown>> =>
   pipe(excludeInputFormatterHandlerMappings(), mappingArr =>
     getHandler(mappingArr, excludeInputMapping)
   );
 
 export const mapFormatting = <T extends Record<string, unknown>>(
   mapping: DataMapping
-): MappingFormatter<T, unknown> => {
+): MappingFormatter<T, Record<string, unknown>> => {
   switch (mapping.type) {
     case "SINGLE_INPUT":
       return getSingleInputHandler(mapping);
@@ -98,7 +106,7 @@ export const mapFormatting = <T extends Record<string, unknown>>(
 
 export const mapEnrichment = <T extends Record<string, unknown>>(
   enrichment: EnrichmentDataSource
-): MappingEnrichment<T, unknown> => {
+): EnrichmentApplier<T, Record<string, unknown>> => {
   switch (enrichment.type) {
     case "BlobStorage":
       return createBlobStorageEnrichmentService(
@@ -113,7 +121,34 @@ export const mapEnrichment = <T extends Record<string, unknown>>(
     case "API":
       throw Error(NOT_IMPLEMENTED_ERROR);
     case "CosmosDB":
-      throw Error(NOT_IMPLEMENTED_ERROR);
+      return pipe(
+        createCosmosQueryEnrichmentService(enrichment.params.connectionString),
+        E.getOrElseW(() => {
+          throw Error("Cannot create Cosmos Query Enrichment Service");
+        }),
+        service =>
+          pipe(
+            enrichment.params,
+            O.fromPredicate(DocumentModelVersionedQuery.is),
+            O.map(params =>
+              applyVersionedQueryEnrichment(
+                params.dbName,
+                params.dbResourceName,
+                params.streamKeyFieldName,
+                params.streamPkFieldName,
+                params.dbResourceVersionFieldName
+              )(service.findLastVersionByKey)
+            ),
+            O.getOrElse(() =>
+              applyFindByKeyQueryEnrichment(
+                enrichment.params.dbName,
+                enrichment.params.dbResourceName,
+                enrichment.params.streamKeyFieldName,
+                enrichment.params.streamPkFieldName
+              )(service.findByKey)
+            )
+          )
+      );
     case "MongoDB":
       throw Error(NOT_IMPLEMENTED_ERROR);
     case "PosgresDB":
@@ -123,6 +158,7 @@ export const mapEnrichment = <T extends Record<string, unknown>>(
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const constructDataPipelineHandlers = (config: Configuration) =>
   pipe(
     config.dataPipelines,

@@ -14,7 +14,7 @@ export const blobEnrich = <T extends Record<string, unknown>>(
   blobContainerClient: BS.ContainerClient
 ) => (blobNameField: keyof T, outputFieldName?: string) => (
   input: T
-): TE.TaskEither<Error, T> =>
+): TE.TaskEither<Error, O.Option<Record<string, unknown>>> =>
   pipe(
     input[blobNameField],
     NonEmptyString.decode,
@@ -47,8 +47,7 @@ export const blobEnrich = <T extends Record<string, unknown>>(
             )
           )
         ),
-        O.chain(O.fromEither),
-        O.getOrElse(() => input)
+        O.chain(O.fromEither)
       )
     )
   );

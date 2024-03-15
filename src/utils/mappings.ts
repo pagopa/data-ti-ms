@@ -26,7 +26,6 @@ import { SingleInputMapping } from "@pagopa/data-indexer-commons/lib/types/mappi
 import { SwitchCaseMapping } from "@pagopa/data-indexer-commons/lib/types/mapping/case";
 
 import * as t from "io-ts";
-import { MappingFormatter } from "../formatter/types";
 import { replaceFormat, trimFormat } from "../formatter/string";
 import { booleanToString } from "../formatter/boolean";
 import { divideNumber, multiplyNumber, roundNumber } from "../formatter/number";
@@ -50,6 +49,7 @@ import { flattenField } from "../formatter/flatten";
 import { mergeFields } from "../formatter/mergeFields";
 import { selectFields } from "../formatter/selectFields";
 import { excludeFields } from "../formatter/excludeFields";
+import { MappingFormatter } from "./types";
 
 export interface IFormatterMapping<T> {
   readonly handler: (

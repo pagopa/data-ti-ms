@@ -48,13 +48,13 @@ describe("blobEnrich", () => {
     )();
   });
 
-  it("should return unmodified input if Blob Document is missing", async () => {
+  it("should return none if Blob Document is missing", async () => {
     getBlobDocumentMock.mockImplementationOnce(() => TE.right(O.none));
     await pipe(
       blobEnrich(containerClientMock)("foo")(input),
       TE.bimap(
         () => fail("it should not fail"),
-        result => expect(result).toEqual(input)
+        result => expect(result).toEqual(O.none)
       )
     )();
   });
@@ -68,10 +68,10 @@ describe("blobEnrich", () => {
       TE.bimap(
         () => fail("it should not fail"),
         result =>
-          expect(result).toEqual({
+          expect(result).toEqual(O.some({
             ...input,
             enrichedFieldName: { baz: "baz" }
-          })
+          }))
       )
     )();
   });
@@ -85,10 +85,10 @@ describe("blobEnrich", () => {
       TE.bimap(
         () => fail("it should not fail"),
         result =>
-          expect(result).toEqual({
+          expect(result).toEqual(O.some({
             ...input,
             baz: "baz"
-          })
+          }))
       )
     )();
   });
