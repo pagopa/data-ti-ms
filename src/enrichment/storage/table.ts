@@ -17,12 +17,13 @@ export const InputKeyFields = t.type({
 export type InputKeyFields = t.TypeOf<typeof InputKeyFields>;
 
 export const tableEnrich = <T extends Record<string, unknown>>(
-  tableClient: DT.TableClient
+  tableClient: DT.TableClient,
+  continueOnNotFound: boolean = true
 ) => (
   partitionKeyField: keyof T,
   rowKeyField: keyof T,
   outputFieldName?: string
-) => (input: T): TE.TaskEither<Error, O.Option<Record<string, unknown>>> =>
+) => (input: T): TE.TaskEither<Error, Record<string, unknown>> =>
   pipe(
     { partitionKey: input[partitionKeyField], rowKey: input[rowKeyField] },
     InputKeyFields.decode,
@@ -58,7 +59,20 @@ export const tableEnrich = <T extends Record<string, unknown>>(
             )
           )
         ),
-        O.chain(O.fromEither)
+        O.getOrElse(() =>
+          pipe(
+            continueOnNotFound,
+            E.fromPredicate(
+              flag => flag,
+              () =>
+                Error(
+                  `TableDocument with [partitionKey, rowKey] [${input[partitionKeyField]}, ${input[rowKeyField]}] not found`
+                )
+            ),
+            E.map(() => input)
+          )
+        )
       )
-    )
+    ),
+    TE.chain(TE.fromEither)
   );

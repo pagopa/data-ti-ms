@@ -11,10 +11,11 @@ import { getBlobDocument } from "../../utils/blobStorage";
 import { toJsonObject } from "../../utils/data";
 
 export const blobEnrich = <T extends Record<string, unknown>>(
-  blobContainerClient: BS.ContainerClient
+  blobContainerClient: BS.ContainerClient,
+  continueOnNotFound: boolean = true
 ) => (blobNameField: keyof T, outputFieldName?: string) => (
   input: T
-): TE.TaskEither<Error, O.Option<Record<string, unknown>>> =>
+): TE.TaskEither<Error, Record<string, unknown>> =>
   pipe(
     input[blobNameField],
     NonEmptyString.decode,
@@ -47,7 +48,20 @@ export const blobEnrich = <T extends Record<string, unknown>>(
             )
           )
         ),
-        O.chain(O.fromEither)
+        O.getOrElse(() =>
+          pipe(
+            continueOnNotFound,
+            E.fromPredicate(
+              flag => flag,
+              () =>
+                Error(
+                  `BlobDocument with name ${input[blobNameField]} not found`
+                )
+            ),
+            E.map(() => input)
+          )
+        )
       )
-    )
+    ),
+    TE.chain(TE.fromEither)
   );

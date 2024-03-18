@@ -2,19 +2,20 @@ import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/TaskEither";
 import * as E from "fp-ts/Either";
 import { flow, pipe } from "fp-ts/lib/function";
-import { IQueryEnrichmentParams, MappingEnrichment } from "../utils/types";
-import { flattenField } from "../formatter/flatten";
+import { IQueryEnrichmentParams, MappingEnrichment } from "../../utils/types";
+import { flattenField } from "../../formatter/flatten";
 
-const applyQueryEnrichment = <T, O>(
+const applyQueryEnrichment = <T extends Record<string, unknown>, O>(
   params: IQueryEnrichmentParams<T>,
   idFieldName: keyof T,
   outputFieldName?: string
-) => (queryEnrichmentFn: MappingEnrichment<T, O>) => (
-  dataFlow: T
-): TE.TaskEither<Error, O.Option<Record<string, unknown>>> =>
+) => (
+  queryEnrichmentFn: MappingEnrichment<T, O>,
+  continueOnNotFound: boolean
+) => (dataFlow: T): TE.TaskEither<Error, Record<string, unknown>> =>
   pipe(
     queryEnrichmentFn(params),
-    TE.map(
+    TE.chain(
       flow(
         O.map(output =>
           pipe(
@@ -28,11 +29,25 @@ const applyQueryEnrichment = <T, O>(
                   [flattenFieldName]: output
                 })
               )
-            ),
-            O.fromEither
+            )
           )
         ),
-        O.flatten
+        O.getOrElse(() =>
+          pipe(
+            continueOnNotFound,
+            E.fromPredicate(
+              flag => flag,
+              () =>
+                Error(
+                  `Query Document searched with params ${JSON.stringify(
+                    params
+                  )} not found`
+                )
+            ),
+            E.map(() => dataFlow)
+          )
+        ),
+        TE.fromEither
       )
     )
   );
@@ -45,9 +60,10 @@ export const applyFindByKeyQueryEnrichment = <
   idFieldName: keyof T,
   partitionKeyFieldName?: keyof T,
   outputFieldName?: string
-) => (keyQueryEnrichmentFn: MappingEnrichment<T, O>) => (
-  dataFlow: T
-): TE.TaskEither<Error, O.Option<Record<string, unknown>>> =>
+) => (
+  keyQueryEnrichmentFn: MappingEnrichment<T, O>,
+  continueOnNotFound: boolean = true
+) => (dataFlow: T): TE.TaskEither<Error, Record<string, unknown>> =>
   pipe(
     {
       containerName,
@@ -65,7 +81,10 @@ export const applyFindByKeyQueryEnrichment = <
         params,
         idFieldName,
         outputFieldName
-      )(keyQueryEnrichmentFn)(dataFlow)
+      )(
+        keyQueryEnrichmentFn,
+        continueOnNotFound
+      )(dataFlow)
   );
 
 export const applyVersionedQueryEnrichment = <
@@ -79,9 +98,10 @@ export const applyVersionedQueryEnrichment = <
   versionFieldName: string,
   outputFieldName?: string
   // eslint-disable-next-line max-params
-) => (versionedQueryEnrichmentFn: MappingEnrichment<T, O>) => (
-  dataFlow: T
-): TE.TaskEither<Error, O.Option<Record<string, unknown>>> =>
+) => (
+  versionedQueryEnrichmentFn: MappingEnrichment<T, O>,
+  continueOnNotFound: boolean = true
+) => (dataFlow: T): TE.TaskEither<Error, Record<string, unknown>> =>
   pipe(
     {
       containerName,
@@ -100,5 +120,8 @@ export const applyVersionedQueryEnrichment = <
         params,
         idFieldName,
         outputFieldName
-      )(versionedQueryEnrichmentFn)(dataFlow)
+      )(
+        versionedQueryEnrichmentFn,
+        continueOnNotFound
+      )(dataFlow)
   );

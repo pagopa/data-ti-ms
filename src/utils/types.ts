@@ -32,6 +32,4 @@ export type MappingEnrichment<I, O> = (
   queryParams: IQueryEnrichmentParams<I>
 ) => TE.TaskEither<Error, OP.Option<O>>;
 
-export type EnrichmentApplier<I, O> = (
-  input: I
-) => TE.TaskEither<Error, OP.Option<O>>;
+export type EnrichmentApplier<I, O> = (input: I) => TE.TaskEither<Error, O>;

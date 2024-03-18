@@ -26,7 +26,7 @@ import { createCosmosQueryEnrichmentService } from "../enrichment/query/cosmos/s
 import {
   applyFindByKeyQueryEnrichment,
   applyVersionedQueryEnrichment
-} from "../enrichment/apply";
+} from "../enrichment/query/apply";
 import { filterDynamic, filterStatic } from "../filtering/filter";
 import {
   IFormatterMapping,
