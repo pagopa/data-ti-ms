@@ -1,5 +1,6 @@
 import {
   Configuration,
+  DataFilter,
   DataMapping,
   ExcludeInputMapping,
   MultipleInputMapping,
@@ -26,6 +27,7 @@ import {
   applyFindByKeyQueryEnrichment,
   applyVersionedQueryEnrichment
 } from "../enrichment/apply";
+import { filterDynamic, filterStatic } from "../filtering/filter";
 import {
   IFormatterMapping,
   excludeInputFormatterHandlerMappings,
@@ -33,7 +35,7 @@ import {
   selectInputFormatterHandlerMappings,
   singleInputFormatterHandlerMappings
 } from "./mappings";
-import { EnrichmentApplier, MappingFormatter } from "./types";
+import { EnrichmentApplier, MappingFilter, MappingFormatter } from "./types";
 
 const NOT_MAPPED_ERROR = "Not Mapped!";
 const NOT_IMPLEMENTED_ERROR = "Not Implemented!";
@@ -86,6 +88,27 @@ export const getExcludeInputHandler = <T extends Record<string, unknown>>(
   pipe(excludeInputFormatterHandlerMappings(), mappingArr =>
     getHandler(mappingArr, excludeInputMapping)
   );
+
+export const mapFilter = <T extends Record<string, unknown>>(
+  mapping: DataFilter
+): MappingFilter<T> => {
+  switch (mapping.filterType) {
+    case "STATIC":
+      return filterStatic(
+        mapping.fieldName,
+        mapping.condition,
+        mapping.staticValue
+      );
+    case "DYNAMIC":
+      return filterDynamic(
+        mapping.fieldName,
+        mapping.condition,
+        mapping.compareField
+      );
+    default:
+      throw Error(NOT_MAPPED_ERROR);
+  }
+};
 
 export const mapFormatting = <T extends Record<string, unknown>>(
   mapping: DataMapping
@@ -176,6 +199,12 @@ export const constructDataPipelineHandlers = (config: Configuration) =>
                 O.map(RA.map(mapEnrichment)),
                 O.getOrElse(() => [])
               ),
+              filters: pipe(
+                step.dataFilter,
+                O.fromNullable,
+                O.map(RA.map(mapFilter)),
+                O.getOrElse(() => [])
+              ),
               mappings: pipe(
                 step.dataMapping,
                 O.fromNullable,
@@ -186,5 +215,6 @@ export const constructDataPipelineHandlers = (config: Configuration) =>
           )
         )
       )
-    )
+    ),
+    x => x
   );

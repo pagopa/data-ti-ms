@@ -26,6 +26,7 @@ export type IQueryEnrichmentParams<T> =
 
 export type NotInKeys<T, K> = K extends keyof T ? never : K;
 export type MappingFormatter<I, O> = (input: I) => E.Either<Error, O>;
+export type MappingFilter<I> = (input: I) => E.Either<Error, boolean>;
 
 export type MappingEnrichment<I, O> = (
   queryParams: IQueryEnrichmentParams<I>
