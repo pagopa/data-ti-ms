@@ -38,7 +38,6 @@ describe("constructDataPipelineHandlers", () => {
   it("should return an array of transformation handlers related to given config", () => {
     const res = constructDataPipelineHandlers(config);
     expect(res[0][0].mappings.length).toEqual(2);
-    console.log(res[0][0].mappings[0]);
     expect(res[0][0].enrichs.length).toEqual(1);
     expect(res[0][0].filters).toEqual([])
   });
