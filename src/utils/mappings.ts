@@ -60,33 +60,6 @@ export interface IFormatterMapping<T> {
     Partial<typeof DataMapping._O>
   >;
 }
-/**
-const getHandler = (applier: ReturnType<typeof applySingleInput>) => ({
-  BOOLEAN_TO_STRING: (m: BooleanMapping) =>
-    applier(booleanToString(m.trueString, m.falseString)),
-  CAPITALIZE: () => applier(capitalizeFormat),
-  CONVERT_FORMAT: (m: ConvertFormatMapping) => applier(convertFormat(m.output)),
-  DATE_FROM_TIMESTAMP: () => applier(dateStringFromTimestampFormat),
-  DATE_TO_ISO: () => applier(dateStringToIsoFormat),
-  DATE_TO_TIMESTAMP: () => applier(dateStringToTimeStampFormat),
-  DATE_TO_UTC: () => applier(dateStringToUtcFormat),
-  DIVIDE_NUMBER: (m: DivideMapping) => applier(divideNumber(m.divider)),
-  FLATTEN: (m: SingleInputMapping) => flattenField(m.inputFieldName),
-  ISO_TO_UTC: () => applier(isoToUtcFormat),
-  LOWER_CASE: () => applier(lowerCaseFormat),
-  MULTIPLY_NUMBER: (m: MultiplyMapping) =>
-    applier(multiplyNumber(m.multiplier)),
-  REPLACE: (m: ReplaceMapping) =>
-    applier(replaceFormat(m.toBeReplaced, m.placeholder)),
-  REPLACE_ALL: (m: ReplaceAllMapping) =>
-    applier(replaceAllFormat(m.toBeReplaced, m.placeholder)),
-  ROUND_NUMBER: (m: RoundMapping) => applier(roundNumber(m.decimals)),
-  SWITCH_CASE: (m: SwitchCaseMapping) =>
-    applier(switchCaseFormat(m.cases, m.defaultValue)),
-  TRIM: () => applier(trimFormat),
-  UPPER_CASE: () => applier(upperCaseFormat)
-});
- */
 
 export const singleInputFormatterHandlerMappings = <
   T extends Record<string, unknown>

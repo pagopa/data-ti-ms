@@ -12,7 +12,7 @@ import {
   EnrichmentDataSource
 } from "@pagopa/data-indexer-commons/lib/types/enrichment/enrichment";
 
-import { flow, pipe } from "fp-ts/lib/function";
+import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
 import * as RA from "fp-ts/lib/ReadonlyArray";
@@ -188,33 +188,26 @@ export const constructDataPipelineHandlers = (config: Configuration) =>
     RA.map(pipeline =>
       pipe(
         pipeline.dataTransformation,
-        RA.map(
-          flow(
+        RA.map(step => ({
+          enrichs: pipe(
+            step.dataEnrichment,
             O.fromNullable,
-            O.chain(O.fromPredicate(RA.isEmpty)),
-            O.map(step => ({
-              enrichs: pipe(
-                step.dataEnrichment,
-                O.fromNullable,
-                O.map(RA.map(mapEnrichment)),
-                O.getOrElse(() => [])
-              ),
-              filters: pipe(
-                step.dataFilter,
-                O.fromNullable,
-                O.map(RA.map(mapFilter)),
-                O.getOrElse(() => [])
-              ),
-              mappings: pipe(
-                step.dataMapping,
-                O.fromNullable,
-                O.map(RA.map(mapFormatting)),
-                O.getOrElse(() => [])
-              )
-            }))
+            O.map(RA.map(mapEnrichment)),
+            O.getOrElse(() => [])
+          ),
+          filters: pipe(
+            step.dataFilter,
+            O.fromNullable,
+            O.map(RA.map(mapFilter)),
+            O.getOrElse(() => [])
+          ),
+          mappings: pipe(
+            step.dataMapping,
+            O.fromNullable,
+            O.map(RA.map(mapFormatting)),
+            O.getOrElse(() => [])
           )
-        )
+        }))
       )
-    ),
-    x => x
+    )
   );
