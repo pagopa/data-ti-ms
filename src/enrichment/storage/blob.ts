@@ -6,17 +6,16 @@ import * as BS from "@azure/storage-blob";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { flattenField } from "../formatter/flatten";
-import { getBlobDocument } from "../utils/blobStorage";
-import { NotInKeys } from "../utils/types";
-import { toJsonObject } from "../utils/data";
+import { flattenField } from "../../formatter/flatten";
+import { getBlobDocument } from "../../utils/blobStorage";
+import { toJsonObject } from "../../utils/data";
 
-export const blobEnrich = <T, K extends string>(
-  input: T,
+export const blobEnrich = <T extends Record<string, unknown>>(
   blobContainerClient: BS.ContainerClient,
-  blobNameField: keyof T,
-  outputFieldName?: NotInKeys<T, K>
-): TE.TaskEither<Error, T> =>
+  continueOnNotFound: boolean = true
+) => (blobNameField: keyof T, outputFieldName?: string) => (
+  input: T
+): TE.TaskEither<Error, Record<string, unknown>> =>
   pipe(
     input[blobNameField],
     NonEmptyString.decode,
@@ -36,21 +35,33 @@ export const blobEnrich = <T, K extends string>(
           pipe(
             outputFieldName,
             O.fromNullable,
-            O.map(fieldName => ({ ...input, [fieldName]: blobDocumentObject })),
+            O.map(fieldName =>
+              E.right({ ...input, [fieldName]: blobDocumentObject })
+            ),
             O.getOrElseW(() =>
               pipe(`${String(blobNameField)}_enrich`, flattenFieldName =>
-                flattenField(
-                  {
-                    ...input,
-                    [flattenFieldName]: blobDocumentObject
-                  },
-                  flattenFieldName
-                )
+                flattenField(flattenFieldName)({
+                  ...input,
+                  [flattenFieldName]: blobDocumentObject
+                })
               )
             )
           )
         ),
-        O.getOrElse(() => input)
+        O.getOrElse(() =>
+          pipe(
+            continueOnNotFound,
+            E.fromPredicate(
+              flag => flag,
+              () =>
+                Error(
+                  `BlobDocument with name ${input[blobNameField]} not found`
+                )
+            ),
+            E.map(() => input)
+          )
+        )
       )
-    )
+    ),
+    TE.chain(TE.fromEither)
   );

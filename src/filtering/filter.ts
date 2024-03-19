@@ -36,7 +36,7 @@ export const filterStatic = <
   staticValue?: K
 ) => (input: T): E.Either<Error, boolean> =>
   pipe(
-    { condition, fieldName, staticValue },
+    { condition, fieldName, filterType: "STATIC", staticValue },
     DataFilter.decode,
     E.mapLeft(() => new Error("Wrong Filter Definition")),
     E.chain(_ =>
@@ -61,7 +61,8 @@ export const filterDynamic = <
     {
       compareField,
       condition,
-      fieldName
+      fieldName,
+      filterType: "DYNAMIC"
     },
     DataFilter.decode,
     E.mapLeft(errors => new Error(errors.map(e => e.message).join("\n"))),

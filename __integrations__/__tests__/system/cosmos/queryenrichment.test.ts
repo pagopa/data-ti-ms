@@ -1,11 +1,10 @@
 import { CosmosClient } from "@azure/cosmos";
 import * as O from "fp-ts/Option";
 import * as TE from "fp-ts/lib/TaskEither";
-import { pipe } from "fp-ts/lib/function";
+import { constVoid, pipe } from "fp-ts/lib/function";
 import { createCosmosQueryEnrichmentService } from "../../../../src/enrichment/query/cosmos/service";
 import { COSMOSDB_CONNECTION_STRING, COSMOSDB_NAME } from "../../../env";
 import {
-  COLLECTION_ID,
   COLLECTION_ID_KEY,
   COLLECTION_ID_VERSION,
   COLLECTION_PARTITION_KEY,
@@ -13,10 +12,13 @@ import {
   COSMOS_COLLECTION_NAME,
   VERSION_FIELD_NAME,
   VERSION_FIELD_VALUE,
-  WRONG_VERSION_FIELD_VALUE,
   createCosmosDbAndCollections,
   deleteDatabase,
 } from "../../../utils/cosmos";
+import {
+  IKeyQueryEnrichmentParams,
+  IVersionedQueryEnrichmentParams,
+} from "../../../../src/utils/types";
 
 const client = new CosmosClient(COSMOSDB_CONNECTION_STRING);
 
@@ -35,24 +37,24 @@ afterAll(async () => {
   await pipe(
     deleteDatabase(client, COSMOSDB_NAME),
     TE.getOrElse((e) => {
-      throw Error(`Cannot delete db ${e.message}`);
+      throw Error(`Cannot delete db ${e}`);
     }),
   )();
 });
+
+const findByKeyParams: IKeyQueryEnrichmentParams<Record<string, unknown>> = {
+  containerName: COSMOS_COLLECTION_NAME,
+  databaseName: COSMOSDB_NAME,
+  idFieldValue: COLLECTION_ID_KEY,
+  partitionKeyFieldValue: COLLECTION_PARTITION_KEY,
+};
 
 describe("findByKey", () => {
   it("should return Some(unknown) when the item is found", async () => {
     await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
-      TE.chain((service) =>
-        service.findByKey(
-          COSMOSDB_NAME,
-          COSMOS_COLLECTION_NAME,
-          COLLECTION_ID_KEY,
-          COLLECTION_PARTITION_KEY,
-        ),
-      ),
+      TE.chain((service) => service.findByKey(findByKeyParams)),
       TE.bimap(
         (err) => {
           new Error(
@@ -77,14 +79,7 @@ describe("findByKey", () => {
     await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
-      TE.chain((service) =>
-        service.findByKey(
-          COSMOSDB_NAME,
-          COSMOS_COLLECTION_NAME,
-          COLLECTION_ID,
-          COLLECTION_PARTITION_KEY,
-        ),
-      ),
+      TE.chain((service) => service.findByKey({...findByKeyParams, idFieldValue: Math.random().toString()})),
       TE.bimap(
         (err) => {
           new Error(
@@ -97,21 +92,24 @@ describe("findByKey", () => {
   });
 });
 
+const findLastVersionParams: IVersionedQueryEnrichmentParams<
+  Record<string, unknown>
+> = {
+  containerName: COSMOS_COLLECTION_NAME,
+  databaseName: COSMOSDB_NAME,
+  idFieldValue: COLLECTION_ID_VERSION,
+  partitionKeyFieldName: COLLECTION_PARTITION_KEY,
+  partitionKeyFieldValue: COLLECTION_PARTITION_KEY_VALUE,
+  versionFieldName: VERSION_FIELD_NAME,
+};
+
 describe("findByLastVersionKey", () => {
   it("should return Some(unknown) when the item is found with the last version", async () => {
     return await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
       TE.chain((service) =>
-        service.findLastVersionByKey(
-          COSMOSDB_NAME,
-          COSMOS_COLLECTION_NAME,
-          VERSION_FIELD_NAME,
-          VERSION_FIELD_VALUE,
-          COLLECTION_ID_VERSION,
-          COLLECTION_PARTITION_KEY,
-          COLLECTION_PARTITION_KEY_VALUE,
-        ),
+        service.findLastVersionByKey(findLastVersionParams),
       ),
       TE.bimap(
         (err) => {
@@ -135,20 +133,12 @@ describe("findByLastVersionKey", () => {
     )();
   });
 
-  it("should return None(unknown) when the item is not found with the specific version", async () => {
+  it("should return None(unknown) when the item is not found with last version", async () => {
     await pipe(
       createCosmosQueryEnrichmentService(COSMOSDB_CONNECTION_STRING),
       TE.fromEither,
       TE.chain((service) =>
-        service.findLastVersionByKey(
-          COSMOSDB_NAME,
-          COSMOS_COLLECTION_NAME,
-          VERSION_FIELD_NAME,
-          WRONG_VERSION_FIELD_VALUE,
-          COLLECTION_ID_KEY,
-          COLLECTION_PARTITION_KEY,
-          COLLECTION_PARTITION_KEY_VALUE,
-        ),
+        service.findLastVersionByKey({...findLastVersionParams, idFieldValue: Math.random().toString()}),
       ),
       TE.bimap(
         (err) => {

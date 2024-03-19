@@ -1,4 +1,5 @@
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
+import * as E from "fp-ts/Either";
 import { flattenField } from "../flatten";
 
 const aNormalizedField = {
@@ -22,30 +23,34 @@ const anotherInput = {
 };
 describe("flattenField", () => {
   it("should return unmodified input if fieldToFlat is not an Object", () => {
-    const result = flattenField(input, "foo");
-    expect(result).toEqual(input);
+    const result = flattenField("foo")(input);
+    expect(result).toEqual(E.right(input));
   });
 
   it("should return a flattened input without renaming any field", () => {
-    const result = flattenField(input, "normalized");
+    const result = flattenField("normalized")(input);
     expect(result).toEqual(
-      withoutUndefinedValues({
-        ...input,
-        normalized: undefined,
-        ...aNormalizedField
-      })
+      E.right(
+        withoutUndefinedValues({
+          ...input,
+          normalized: undefined,
+          ...aNormalizedField
+        })
+      )
     );
   });
 
   it("should return a flattened input with renaming fields that overlap existing input fields", () => {
-    const result = flattenField(anotherInput, "normalized");
+    const result = flattenField("normalized")(anotherInput);
     expect(result).toEqual(
-      withoutUndefinedValues({
-        ...aNormalizedFieldWithAlreadyExistingProperty,
-        ...anotherInput,
-        normalized: undefined,
-        normalized_foo: aNormalizedFieldWithAlreadyExistingProperty.foo
-      })
+      E.right(
+        withoutUndefinedValues({
+          ...aNormalizedFieldWithAlreadyExistingProperty,
+          ...anotherInput,
+          normalized: undefined,
+          normalized_foo: aNormalizedFieldWithAlreadyExistingProperty.foo
+        })
+      )
     );
   });
 });
