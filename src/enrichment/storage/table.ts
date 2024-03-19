@@ -6,9 +6,8 @@ import * as DT from "@azure/data-tables";
 import * as t from "io-ts";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { errorsToReadableMessages } from "@pagopa/ts-commons/lib/reporters";
-import { flattenField } from "../formatter/flatten";
-import { getTableDocument } from "../utils/tableStorage";
-import { NotInKeys } from "../utils/types";
+import { flattenField } from "../../formatter/flatten";
+import { getTableDocument } from "../../utils/tableStorage";
 
 export const InputKeyFields = t.type({
   partitionKey: NonEmptyString,
@@ -17,13 +16,14 @@ export const InputKeyFields = t.type({
 
 export type InputKeyFields = t.TypeOf<typeof InputKeyFields>;
 
-export const tableEnrich = <T, K extends string>(
-  input: T,
+export const tableEnrich = <T extends Record<string, unknown>>(
   tableClient: DT.TableClient,
+  continueOnNotFound: boolean = true
+) => (
   partitionKeyField: keyof T,
   rowKeyField: keyof T,
-  outputFieldName?: NotInKeys<T, K>
-): TE.TaskEither<Error, T> =>
+  outputFieldName?: string
+) => (input: T): TE.TaskEither<Error, Record<string, unknown>> =>
   pipe(
     { partitionKey: input[partitionKeyField], rowKey: input[rowKeyField] },
     InputKeyFields.decode,
@@ -44,23 +44,35 @@ export const tableEnrich = <T, K extends string>(
           pipe(
             outputFieldName,
             O.fromNullable,
-            O.map(fieldName => ({ ...input, [fieldName]: tableDocument })),
+            O.map(fieldName =>
+              E.right({ ...input, [fieldName]: tableDocument })
+            ),
             O.getOrElse(() =>
               pipe(
                 `${String(partitionKeyField)}_${String(rowKeyField)}_enrich`,
                 flattenFieldName =>
-                  flattenField(
-                    {
-                      ...input,
-                      [flattenFieldName]: tableDocument
-                    },
-                    flattenFieldName
-                  )
+                  flattenField(flattenFieldName)({
+                    ...input,
+                    [flattenFieldName]: tableDocument
+                  })
               )
             )
           )
         ),
-        O.getOrElse(() => input)
+        O.getOrElse(() =>
+          pipe(
+            continueOnNotFound,
+            E.fromPredicate(
+              flag => flag,
+              () =>
+                Error(
+                  `TableDocument with [partitionKey, rowKey] [${input[partitionKeyField]}, ${input[rowKeyField]}] not found`
+                )
+            ),
+            E.map(() => input)
+          )
+        )
       )
-    )
+    ),
+    TE.chain(TE.fromEither)
   );

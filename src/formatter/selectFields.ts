@@ -1,10 +1,9 @@
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 import { pipe } from "fp-ts/function";
-
-export const selectFields = <T>(
-  input: T,
+import * as E from "fp-ts/Either";
+export const selectFields = <T extends Record<string, unknown>>(
   fields: ReadonlyArray<keyof T>
-): Partial<T> =>
+) => (input: T): E.Either<Error, Partial<T>> =>
   pipe(
     fields.reduce(
       (acc, field) => ({
@@ -13,5 +12,6 @@ export const selectFields = <T>(
       }),
       {}
     ),
-    withoutUndefinedValues
+    withoutUndefinedValues,
+    E.right
   );

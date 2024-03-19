@@ -1,3 +1,4 @@
+import * as E from "fp-ts/Either";
 import { excludeFields } from "../excludeFields";
 
 const inputData = {
@@ -8,15 +9,15 @@ const inputData = {
 
 describe("excludeFields", () => {
   it("should exclude fields from an object", () => {
-    const res = excludeFields(inputData, ["foo", "baz"]);
-    expect(res).toEqual({ bar: "bar" });
+    const res = excludeFields(["foo", "baz"])(inputData);
+    expect(res).toEqual(E.right({ bar: "bar" }));
   });
   it("should return same input object if no fields are provided", () => {
-    const res = excludeFields(inputData, []);
-    expect(res).toEqual(inputData);
+    const res = excludeFields([])(inputData);
+    expect(res).toEqual(E.right(inputData));
   });
   it("should return same input object if a missing field is provided", () => {
-    const res = excludeFields(inputData, ["fooooo" as keyof typeof inputData]);
-    expect(res).toEqual(inputData);
+    const res = excludeFields(["fooooo" as keyof typeof inputData])(inputData);
+    expect(res).toEqual(E.right(inputData));
   });
 });

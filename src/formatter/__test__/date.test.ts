@@ -136,32 +136,32 @@ describe("dateStringFromTimestampFormat", () => {
 describe("convertFormat", () => {
   it("should return a date string YYYY-MM-dd from a ISO string", () => {
     pipe(
-      convertFormat(isoStr, outputFormat1),
+      convertFormat(outputFormat1)(isoStr),
       E.bimap(testFail, result => expect(result).toEqual("2023-01-01"))
     );
   });
   it("should return a date string YYYY-MM-dd hh:mm from a ISO string", () => {
     pipe(
-      convertFormat(isoStr, "yyyy-MM-dd HH:mm"),
+      convertFormat("yyyy-MM-dd HH:mm")(isoStr),
       E.bimap(testFail, result => expect(result).toEqual("2023-01-01 12:34"))
     );
   });
   it("should return a date string YYYY-MM-dd hh:mm:ss from a ISO string", () => {
     pipe(
-      convertFormat(isoStr, "yyyy-MM-dd HH:mm:ss"),
+      convertFormat("yyyy-MM-dd HH:mm:ss")(isoStr),
       E.bimap(testFail, result => expect(result).toEqual("2023-01-01 12:34:56"))
     );
   });
   it("should return an error from an invalid ISO string", () => {
     pipe(
-      convertFormat(invalidIsoStr, outputFormat1),
+      convertFormat(outputFormat1)(invalidIsoStr),
       E.bimap(invalidIsoStringError, testFail)
     );
   });
   it("should return an error from an invalid outputFormat", () => {
     pipe(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      convertFormat(isoStr, invalidOutputFormat as any),
+      convertFormat(invalidOutputFormat as any)(isoStr),
       E.bimap(err => {
         expect(err).toBeDefined();
         expect(err.message).toEqual(

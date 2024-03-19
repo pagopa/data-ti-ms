@@ -1,21 +1,26 @@
-import { applyFormat } from "../apply";
+import * as E from "fp-ts/Either";
+import { applySingleInput } from "../apply";
 import { upperCaseFormat } from "../string";
 
 const dataFlow = {
   foo: "bar"
 };
 
-describe("applyFormat", () => {
+describe("applySingleInput", () => {
   it("should apply a formatter function without adding new field", () => {
-    const formattedFlow = applyFormat(dataFlow, "foo")(upperCaseFormat);
-    expect(formattedFlow).toEqual({ foo: upperCaseFormat(dataFlow.foo) });
+    const formattedFlow = applySingleInput("foo")(upperCaseFormat)(dataFlow);
+    expect(formattedFlow).toEqual(E.right({ foo: dataFlow.foo.toUpperCase() }));
   });
 
   it("should apply a formatter function with adding new field", () => {
-    const formattedFlow = applyFormat(dataFlow, "foo", "bar")(upperCaseFormat);
-    expect(formattedFlow).toEqual({
-      bar: upperCaseFormat(dataFlow.foo),
-      foo: dataFlow.foo
-    });
+    const formattedFlow = applySingleInput("foo", "bar")(upperCaseFormat)(
+      dataFlow
+    );
+    expect(formattedFlow).toEqual(
+      E.right({
+        bar: dataFlow.foo.toUpperCase(),
+        foo: dataFlow.foo
+      })
+    );
   });
 });
