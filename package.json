@@ -37,7 +37,9 @@
         "typescript": "^4.3.5"
     },
     "dependencies": {
+        "@azure/identity": "^4.0.1",
         "@azure/cosmos": "^4.0.0",
+        "@azure/event-hubs": "^5.11.3",
         "@pagopa/data-indexer-commons": "^0.3.3",
         "@azure/data-tables": "^13.2.2",
         "@azure/storage-blob": "^12.17.0",
