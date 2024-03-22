@@ -1,0 +1,31 @@
+version: "2.2"
+
+services:
+
+  data-ti-ms:
+    container_name: data-ti-ms
+    restart: always
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    expose:
+      - "3000"
+      - "80"
+    ports:
+      - "3000:3000"
+      - "80:80"
+    command: ["node", "dist/index.js"]
+    networks:
+      - data-be
+
+volumes:
+  certs:
+    driver: local
+
+networks:
+  data-be:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
