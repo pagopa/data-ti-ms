@@ -18,7 +18,7 @@ services:
       - integration-be
 
   storage-account:
-    image: mcr.microsoft.com/azure-storage/azurite
+    image: mcr.microsoft.com/azure-storage/azurite@sha256:c26024d62bf4a5b88a40968afd217234c00e1fc9a4790dc6105d1ca7979f6eec
     container_name: storage-account
     restart: always
     command: "azurite --blobHost 0.0.0.0 --blobPort 20003 --queueHost 0.0.0.0 --queuePort 20004 --tableHost 0.0.0.0 --tablePort 20005"
